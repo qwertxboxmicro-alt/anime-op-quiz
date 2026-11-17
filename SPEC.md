@@ -47,7 +47,8 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Row Level Security: users read/insert only their own rows; no update/delete; anon has no access.
 - [x] Stats modal shows synced stats when signed in, device-only stats when signed out.
 - [x] On sign-in, today's finished local game is uploaded.
-- [ ] Create the Supabase project, run the migration, set `.env.local` (see `.env.example`), set Auth site URL + redirect URLs.
+- [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
+- [ ] Set `.env.local` + Vercel env vars (`NEXT_PUBLIC_SUPABASE_URL`, anon key) if not done.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
 - [ ] Delete-my-account flow (needs a server route with the service role key, never client-side).
 - [ ] Optional: Google/Discord sign-in.
