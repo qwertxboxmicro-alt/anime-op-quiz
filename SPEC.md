@@ -11,14 +11,14 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 ## Core loop (MVP)
 
-- [ ] One opening per day, same for everyone (picked by date).
-- [ ] Clip lengths unlock per miss: 0.1s, 0.5s, 1s, 2s, 4s, 8s (6 tries).
-- [ ] Player guesses the **anime title** (not song title). Skip button = counts as a miss.
-- [ ] Autocomplete over a list of anime titles (English + romaji).
-- [ ] Win/lose screen: anime, song, artist, cover art, link to Apple Music.
-- [ ] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL.
-- [ ] One play per day per device (localStorage). No accounts.
-- [ ] Countdown to next puzzle.
+- [x] One opening per day, same for everyone (picked by date). _Code: `openingFor(day)` in `lib/game.ts`._
+- [x] Clip lengths unlock per miss: 0.1s, 0.5s, 1s, 2s, 4s, 8s (6 tries). _Code: `CLIPS` in `lib/game.ts`._
+- [x] Player guesses the **anime title** (not song title). Skip button = counts as a miss. _Code: `submit("", "skip")` adds a guess in `Game.tsx`._
+- [x] Autocomplete over a list of anime titles (English + romaji). _Code: matches title + alt terms from `public/anime.json` (alts include romaji); not checked how complete the list is._
+- [x] Win/lose screen: anime, song, artist, cover art, link to Apple Music. _Code: result section in `Game.tsx`._
+- [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `lib/game.ts`; format is `🎵 OP Quiz #N 0.5s <squares>` + origin; skips show ⬜._
+- [x] One play per day per device (localStorage). _Code: `opq-v1` restores today's guesses. Accounts were added later (optional)._
+- [x] Countdown to next puzzle. _Code: `useCountdown` + `msToNext` (UTC midnight)._
 
 ## Audio
 
@@ -49,7 +49,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] On sign-in, today's finished local game is uploaded.
 - [ ] Create the Supabase project, run the migration, set `.env.local` (see `.env.example`), set Auth site URL + redirect URLs.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
-- [ ] Delete-my-account flow (needs a server route with the service role key, never client-side).
+- [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._
 - [ ] Optional: Google/Discord sign-in.
 
 ## Security testing
@@ -63,13 +63,13 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [ ] Verify headers on the deployed site (securityheaders.com or `curl -I`) and check the browser console for CSP violations.
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
 - [ ] Re-test auth redirect: link must only return to our own origin (open redirect check).
-- [ ] Dependency updates + `npm audit` in CI.
+- [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependency-update bot (Dependabot) not added._
 
 ## Later (only once real players show up)
 
 - [ ] Global stats (needs aggregate counts across all users): "Only 3% got it at 0.1s" (Supabase: `results(date, tries)` counts).
 - [ ] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
-- [ ] Endless / practice mode (random past openings).
+- [x] Endless / practice mode (random openings). _Code: `randomOpening` in `Game.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
 - [ ] Endings (ED) mode, hard mode (start at 0.05s), decade filters.
 - [ ] Streaks, archive of past days.
 

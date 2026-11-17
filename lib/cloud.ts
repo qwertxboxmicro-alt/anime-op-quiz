@@ -32,6 +32,20 @@ export async function sendLink(email: string) {
 
 export const signOut = async () => { await sb()?.auth.signOut(); };
 
+// Calls the server route, which deletes the user named by our own access token. Returns an error message or null.
+export async function deleteAccount(): Promise<string | null> {
+  const token = (await sb()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return "Not signed in.";
+  try {
+    const r = await fetch("/api/delete-account", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return ((await r.json().catch(() => null)) as { error?: string } | null)?.error ?? "Could not delete account.";
+  } catch {
+    return "Could not delete account.";
+  }
+  await signOut(); // user is gone server-side; this clears the local session (may 403 harmlessly)
+  return null;
+}
+
 // Duplicate (already recorded) is fine: ignore the conflict.
 export async function pushResult(r: Row) {
   const c = sb();

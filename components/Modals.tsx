@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
-import { cloudEnabled, fetchRows, sendLink, signOut, statsFromRows } from "@/lib/cloud";
+import { cloudEnabled, deleteAccount, fetchRows, sendLink, signOut, statsFromRows } from "@/lib/cloud";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -64,6 +64,16 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const remove = async () => {
+    setBusy(true);
+    const err = await deleteAccount();
+    if (err) { setMsg(err); setBusy(false); return; }
+    // Wipe this device's game data too (stats, today's game, options, seen flag).
+    try { ["opq-v1", "opq-stats", "opq-opts", "opq-seen"].forEach((k) => localStorage.removeItem(k)); } catch {}
+    window.location.reload();
+  };
   const send = async () => {
     setBusy(true);
     const err = await sendLink(email.trim());
@@ -76,6 +86,17 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
         <>
           <p className="how">Signed in as <b>{user.email}</b>. Your daily results are saved to your account.</p>
           <button className="primary" onClick={() => signOut().then(onClose)}>Sign out</button>
+          {!deleting ? (
+            <button onClick={() => setDeleting(true)}>Delete account</button>
+          ) : (
+            <>
+              <p className="how">This permanently deletes your account and all synced results. Type <b>DELETE</b> to confirm.</p>
+              <input value={confirm} placeholder="DELETE" aria-label="Type DELETE to confirm" autoComplete="off"
+                onChange={(e) => setConfirm(e.target.value)} />
+              <button disabled={busy || confirm.trim() !== "DELETE"} onClick={remove}>Permanently delete</button>
+              {msg && <p className="how" role="alert">{msg}</p>}
+            </>
+          )}
         </>
       ) : (
         <>
