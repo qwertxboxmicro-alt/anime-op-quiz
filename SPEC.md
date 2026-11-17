@@ -47,7 +47,8 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Row Level Security: users read/insert only their own rows; no update/delete; anon has no access.
 - [x] Stats modal shows synced stats when signed in, device-only stats when signed out.
 - [x] On sign-in, today's finished local game is uploaded.
-- [ ] Create the Supabase project, run the migration, set `.env.local` (see `.env.example`), set Auth site URL + redirect URLs.
+- [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
+- [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
 - [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._
 - [ ] Optional: Google/Discord sign-in.
@@ -59,10 +60,13 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] No secrets in client bundle or repo: only the public anon key is used; `.env*` is gitignored, `.env.example` committed.
 - [x] RLS test script: `node scripts/security-test.mjs` (anon access, cross-user read/write, update/delete blocked, constraint checks).
 - [ ] Run the RLS test script against the real Supabase project (test project first).
-- [ ] Supabase dashboard: email confirmation on, rate limits on, only needed redirect URLs allowed, service_role key kept out of Vercel public env vars.
-- [ ] Verify headers on the deployed site (securityheaders.com or `curl -I`) and check the browser console for CSP violations.
+- [x] Supabase Auth config checked via API: email confirmation on, redirect allow-list only prod + localhost, service_role/secret key not in Vercel env vars. RLS policies + grants verified live (anon none, authenticated select+insert only after `0002`).
+- [ ] Email send limit is 2/hour on Supabase's built-in mailer; set custom SMTP before real traffic. **Deferred (decided 2026-11-17): do this later with Resend.** Plan: owner has a domain; add a `mail.<domain>` sending subdomain in Resend, add its DNS records (SPF, DKIM, return-path), create an API key (owner creates it, pasted into Supabase Dashboard > Auth > SMTP, never into chat/repo), set host `smtp.resend.com`, port 465, user `resend`, sender `noreply@mail.<domain>`, then raise the Auth email rate limit and re-test sign-in. Also add the domain to the Supabase redirect allow-list + Vercel domains if the app moves to it.
+- [x] Headers verified on deployed site with `curl -I` (CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS).
+- [ ] Check the browser console on the deployed site for CSP violations.
+- [x] Live sign-in tested 2026-11-17: email link sent, confirm email arrived, link returned to our origin and created a session (new-user flow = "Confirm your email address" signup link). Not yet tested: a round syncing to `results`, returning-user sign-in.
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
-- [ ] Re-test auth redirect: link must only return to our own origin (open redirect check).
+- [x] Auth redirect checked: the emailed link redirects only to our own origin (allow-list is prod + localhost). Crafted foreign `redirect_to` not tried.
 - [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependency-update bot (Dependabot) not added._
 
 ## Later (only once real players show up)

@@ -47,3 +47,6 @@ Base: claude/task-list-review-e7f3a0. Nothing pushed or merged. `.env.local` unt
 ```
 npm ci && npm audit --audit-level=high && npm run lint && npm run build && npx tsc --noEmit
 ```
+
+## Merge (after coordinator request)
+Merged `origin/claude/task-list-review-e7f3a0` (tip dc37052) into this branch: adds `supabase/migrations/0002_revoke_update_delete.sql`, updated `CLAUDE.md`. One conflict in `SPEC.md` (auth-redirect and CI lines): kept their auth-redirect line, kept my ticked CI line. Revert: `git reset --hard c4bca83`.
