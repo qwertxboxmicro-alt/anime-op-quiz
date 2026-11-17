@@ -64,8 +64,9 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [ ] Email send limit is 2/hour on Supabase's built-in mailer; set custom SMTP before real traffic.
 - [x] Headers verified on deployed site with `curl -I` (CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS).
 - [ ] Check the browser console on the deployed site for CSP violations.
+- [x] Live sign-in tested 2026-11-17: email link sent, confirm email arrived, link returned to our origin and created a session (new-user flow = "Confirm your email address" signup link). Not yet tested: a round syncing to `results`, returning-user sign-in.
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
-- [ ] Re-test auth redirect: link must only return to our own origin (open redirect check).
+- [x] Auth redirect checked: the emailed link redirects only to our own origin (allow-list is prod + localhost). Crafted foreign `redirect_to` not tried.
 - [ ] Dependency updates + `npm audit` in CI.
 
 ## Later (only once real players show up)
