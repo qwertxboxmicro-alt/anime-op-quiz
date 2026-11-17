@@ -7,7 +7,9 @@ import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, po
 import { OPENINGS, type Opening } from "@/data/openings";
 import { loadClip, play, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
-import { HowTo, StatsModal } from "@/components/Modals";
+import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
+import { cloudEnabled, onUser, pushResult } from "@/lib/cloud";
+import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
 const KEY = "opq-v1";
@@ -53,7 +55,17 @@ export default function Game() {
     next(); // new round so the new setting applies cleanly
   };
   const [endless, setEndless] = useState<Opening | null>(null);
-  const [modal, setModal] = useState<"how" | "stats" | null>(null);
+  const [modal, setModal] = useState<"how" | "stats" | "account" | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => onUser(setUser), []);
+  // On sign-in, upload today's finished local game so it counts toward the account.
+  useEffect(() => {
+    if (!user || day === null) return;
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (s?.day === day && finished(s.guesses)) pushResult({ day, won: won(s.guesses), tries: s.guesses.length });
+    } catch {}
+  }, [user, day]);
   useEffect(() => {
     try {
       if (!localStorage.getItem("opq-seen")) {
@@ -77,9 +89,13 @@ export default function Game() {
         <button className={daily ? "on" : ""} onClick={() => setDaily(true)}>Daily</button>
         <button className={!daily ? "on" : ""} onClick={() => { setDaily(false); if (!endless) next(); }}>Endless</button>
         <button className="icon" onClick={() => setModal("stats")} aria-label="Stats">&#9783;</button>
+        {cloudEnabled && (
+          <button className={`icon ${user ? "on" : ""}`} onClick={() => setModal("account")} aria-label="Account">&#9786;</button>
+        )}
       </nav>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
-      {modal === "stats" && <StatsModal onClose={() => setModal(null)} />}
+      {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
+      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
       {!daily && (
         <div className="diffs">
           {(["All", "Easy", "Medium", "Hard"] as const).map((l, i) => (
@@ -165,7 +181,10 @@ function Play({ day, opening, daily, clips, random, onNext }: { day: number; ope
 
   const done = finished(guesses);
   useEffect(() => {
-    if (ready && daily && done) recordResult(day, guesses.length, won(guesses));
+    if (ready && daily && done) {
+      recordResult(day, guesses.length, won(guesses));
+      pushResult({ day, won: won(guesses), tries: guesses.length });
+    }
   }, [ready, daily, done, day, guesses]);
 
   const step = Math.min(guesses.length, clips.length - 1);

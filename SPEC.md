@@ -38,11 +38,36 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 ## Stack
 
 - Next.js (static/edge), deploy on Vercel.
-- No DB for MVP.
+- Supabase for auth + `results` table (accounts and synced stats). Game works without it.
+
+## Accounts & synced stats (Supabase)
+
+- [x] Auth: email magic link (no passwords), Supabase Auth, signed-out play still works.
+- [x] `results(user_id, day, won, tries)` table, one row per user per daily puzzle (`supabase/migrations/0001_results.sql`).
+- [x] Row Level Security: users read/insert only their own rows; no update/delete; anon has no access.
+- [x] Stats modal shows synced stats when signed in, device-only stats when signed out.
+- [x] On sign-in, today's finished local game is uploaded.
+- [ ] Create the Supabase project, run the migration, set `.env.local` (see `.env.example`), set Auth site URL + redirect URLs.
+- [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
+- [ ] Delete-my-account flow (needs a server route with the service role key, never client-side).
+- [ ] Optional: Google/Discord sign-in.
+
+## Security testing
+
+- [x] Security headers: CSP, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, HSTS (`next.config.ts`).
+- [x] `npm audit` clean (re-run before each deploy).
+- [x] No secrets in client bundle or repo: only the public anon key is used; `.env*` is gitignored, `.env.example` committed.
+- [x] RLS test script: `node scripts/security-test.mjs` (anon access, cross-user read/write, update/delete blocked, constraint checks).
+- [ ] Run the RLS test script against the real Supabase project (test project first).
+- [ ] Supabase dashboard: email confirmation on, rate limits on, only needed redirect URLs allowed, service_role key kept out of Vercel public env vars.
+- [ ] Verify headers on the deployed site (securityheaders.com or `curl -I`) and check the browser console for CSP violations.
+- [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
+- [ ] Re-test auth redirect: link must only return to our own origin (open redirect check).
+- [ ] Dependency updates + `npm audit` in CI.
 
 ## Later (only once real players show up)
 
-- [ ] Global stats: "Only 3% got it at 0.1s" (Supabase: `results(date, tries)` counts).
+- [ ] Global stats (needs aggregate counts across all users): "Only 3% got it at 0.1s" (Supabase: `results(date, tries)` counts).
 - [ ] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
 - [ ] Endless / practice mode (random past openings).
 - [ ] Endings (ED) mode, hard mode (start at 0.05s), decade filters.

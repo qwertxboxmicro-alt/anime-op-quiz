@@ -1,6 +1,8 @@
 "use client";
-import { useMemo } from "react";
-import { readStats } from "@/lib/stats";
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { readStats, type Stats } from "@/lib/stats";
+import { cloudEnabled, fetchRows, sendLink, signOut, statsFromRows } from "@/lib/cloud";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -28,8 +30,12 @@ export function HowTo({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function StatsModal({ onClose }: { onClose: () => void }) {
-  const s = useMemo(() => readStats(), []);
+export function StatsModal({ user, day, onClose, onAccount }: { user: User | null; day: number; onClose: () => void; onAccount: () => void }) {
+  const [s, setS] = useState<Stats>(() => readStats());
+  // Signed in: stats come from the account (synced across devices). Signed out: this device only.
+  useEffect(() => {
+    if (user) fetchRows().then((rows) => setS(statsFromRows(rows, day)));
+  }, [user, day]);
   const max = Math.max(1, ...s.dist);
   return (
     <Shell title="Stats" onClose={onClose}>
@@ -47,6 +53,39 @@ export function StatsModal({ onClose }: { onClose: () => void }) {
           </li>
         ))}
       </ol>
+      {cloudEnabled && !user && (
+        <button className="primary" onClick={onAccount}>Sign in to save stats</button>
+      )}
+    </Shell>
+  );
+}
+
+export function AccountModal({ user, onClose }: { user: User | null; onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const send = async () => {
+    setBusy(true);
+    const err = await sendLink(email.trim());
+    setMsg(err ?? "Check your email for a sign-in link.");
+    setBusy(false);
+  };
+  return (
+    <Shell title="Account" onClose={onClose}>
+      {user ? (
+        <>
+          <p className="how">Signed in as <b>{user.email}</b>. Your daily results are saved to your account.</p>
+          <button className="primary" onClick={() => signOut().then(onClose)}>Sign out</button>
+        </>
+      ) : (
+        <>
+          <p className="how">Sign in with a one-time email link to keep your stats across devices. No password.</p>
+          <input type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
+            onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && send()} />
+          <button className="primary" disabled={busy || !/^\S+@\S+\.\S+$/.test(email.trim())} onClick={send}>Send link</button>
+          {msg && <p className="how" role="status">{msg}</p>}
+        </>
+      )}
     </Shell>
   );
 }
