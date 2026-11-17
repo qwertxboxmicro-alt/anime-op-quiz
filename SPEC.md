@@ -48,7 +48,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Stats modal shows synced stats when signed in, device-only stats when signed out.
 - [x] On sign-in, today's finished local game is uploaded.
 - [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
-- [ ] Set `.env.local` + Vercel env vars (`NEXT_PUBLIC_SUPABASE_URL`, anon key) if not done.
+- [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
 - [ ] Delete-my-account flow (needs a server route with the service role key, never client-side).
 - [ ] Optional: Google/Discord sign-in.
@@ -60,8 +60,10 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] No secrets in client bundle or repo: only the public anon key is used; `.env*` is gitignored, `.env.example` committed.
 - [x] RLS test script: `node scripts/security-test.mjs` (anon access, cross-user read/write, update/delete blocked, constraint checks).
 - [ ] Run the RLS test script against the real Supabase project (test project first).
-- [ ] Supabase dashboard: email confirmation on, rate limits on, only needed redirect URLs allowed, service_role key kept out of Vercel public env vars.
-- [ ] Verify headers on the deployed site (securityheaders.com or `curl -I`) and check the browser console for CSP violations.
+- [x] Supabase Auth config checked via API: email confirmation on, redirect allow-list only prod + localhost, service_role/secret key not in Vercel env vars. RLS policies + grants verified live (anon none, authenticated select+insert only after `0002`).
+- [ ] Email send limit is 2/hour on Supabase's built-in mailer; set custom SMTP before real traffic.
+- [x] Headers verified on deployed site with `curl -I` (CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS).
+- [ ] Check the browser console on the deployed site for CSP violations.
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
 - [ ] Re-test auth redirect: link must only return to our own origin (open redirect check).
 - [ ] Dependency updates + `npm audit` in CI.
