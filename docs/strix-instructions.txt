@@ -1,0 +1,18 @@
+Target is the owner's own LOCAL dev copy of the anime-op-quiz app (Next.js) at http://localhost:3000. Authorized black-box test, unauthenticated only. The owner asked for an all-out, thorough scan inside the rules below.
+
+HARD RULES
+- Stay on the origin http://localhost:3000 only. Never contact any other host: no supabase.co, itunes.apple.com, anilist.co, vercel.app, github.com or anything external. The Supabase URL in this build is deliberately unreachable; do not try to reach or discover a real one.
+- No DoS, no flooding, no more than ~5 requests per second. Keep request bodies modest (oversized-body tests: a few hundred KB at most, a handful of times).
+- Do not create accounts and do not try to guess or brute force credentials. No valid session or key exists.
+- If you find anything that looks like a secret (API key, token, hash), report only its location and type, never the value.
+- No destructive or out-of-scope actions: do not modify files, do not attack the host machine or the scanner's own container.
+
+FOCUS
+1. POST /api/delete-account (server-only, uses a service-role key that is NOT set here): must fail closed. Test: no/invalid/malformed/forged Authorization bearer, wrong or missing Origin, cross-origin Origin, other HTTP methods (GET, PUT, DELETE, OPTIONS, HEAD, PATCH), oversized and malformed bodies, odd content types, header tricks. Look for any response that is not a generic error, any stack trace or env/info leak, any path that could delete without a valid token, user id taken from body/query.
+2. Security headers and CSP on all routes: presence, correctness, weaknesses; CORS; cookies (should be none); info disclosure (versions, stack traces, error pages).
+3. Next.js specifics: x-middleware-subrequest and other middleware/proxy bypass headers, _next/ data and image routes (/_next/image SSRF/open proxy), source map and build artifact exposure (.next, *.map), RSC payload leakage, server action discovery, path traversal, static files and /public contents.
+4. Client bundle: secrets or keys in JS bundles (report location/type only), dangerous inline scripts, dependency known issues.
+5. XSS and injection in the client: the guess box / autocomplete, share text, URL query/hash params, localStorage values (keys opq-v1, opq-stats, opq-opts, opq-seen) parsed unsafely, prototype pollution, DOM sinks (innerHTML, dangerouslySetInnerHTML).
+6. Autocomplete data (/anime.json): exposure of answers to the daily puzzle (answer leakage is a game-integrity finding, report with low severity), malformed data.
+7. Open redirects (auth callback / redirect params), host header injection, caching issues.
+8. Auth-related client code paths that can be tested without Supabase (the backend is offline by design): report code-level weaknesses only.
