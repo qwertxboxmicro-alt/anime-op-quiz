@@ -50,3 +50,17 @@ None (scan did not run). No code changed, so no fixes to revert except the instr
 - User-level `STRIX_LLM` / `LLM_API_KEY` (old Groq config) deleted, so the file config is used. Groq is not used for Strix anymore.
 - **When the model hits its cap/limit, change the model in `~/.strix/cli-config.json` (`STRIX_LLM`) to another free+tools OpenRouter model from the fallback list above, then `strix --resume <run-name>` with the same flags.** Strix does not switch models by itself.
 - Scan not yet run.
+
+## Scan run 2026-11-18 (completed)
+Target: local prod build (`npm run build && npm start`, port 3000, dummy Supabase URL `http://127.0.0.1:9`, anon key `dummy`). `strix -n -m standard --max-budget 5`, model `openrouter/thinkingmachines/inkling-2-small:free`, private config copy, `env -u STRIX_LLM -u LLM_API_KEY` (the shell had those vars set again; the file config was used). Ran ~20 min, 578 LLM requests, 54.5M input tokens, no model cap hit. Run dir `strix_runs/host-docker-internal-3000_e53d` (gitignored).
+
+Result: **1 finding, LOW (CVSS 3.7, CWE-602)**, no Critical/High/Medium.
+- `/anime.json` (public autocomplete list, 1500 titles) plus the daily schedule formula in the client bundle lets anyone derive the daily answer. Game integrity only. **Not fixed**: the game is fully client-side by design (SPEC); fixing needs server-side answer checking. Accepted risk, no anti-cheat guarantee.
+
+Strix also reported, no vulnerability: `/api/delete-account` fail-closed on ~150 probes (always the same 503 generic body; note the service key was unset, so auth/origin branches still untested); `/_next/image` no SSRF/open proxy; no source maps, `.env`, `.git`; middleware-bypass headers ineffective; no secrets in the bundle; no DOM sink, localStorage `opq-*` values render escaped, no prototype pollution; no cookies; CSP identical on all routes.
+
+Notes (not fixed, no code changed):
+- CSP still has `'unsafe-inline'` for script/style (known, accepted).
+- Robustness only: `components/Game.tsx` `o?.start in SCHEDULES` accepts inherited keys like `"toString"` from a tampered `opq-opts`; use `Object.hasOwn(SCHEDULES, o?.start)`. Left alone because another session is editing Game.tsx. Also validate `opq-stats` `dist` shape on read.
+- Possible later: COOP/CORP headers, canonical origin for og:image.
+- Coverage limit: black-box, unauthenticated, no live Supabase. Re-run after wiring auth or the delete-account service key against a test Supabase project.
