@@ -44,3 +44,9 @@ Dev-only: CSP includes `'unsafe-eval'` and `ws:` (dev mode); prod build does not
 
 ## Findings
 None (scan did not run). No code changed, so no fixes to revert except the instruction/gitignore commit: `git revert <sha>` of "Add Strix instruction file".
+
+## Update 2026-11-18: key fixed, Groq removed
+- New OpenRouter key in `~/.strix/cli-config.json` verified valid (50 credit limit). Model: `openrouter/thinkingmachines/inkling-2-small:free`.
+- User-level `STRIX_LLM` / `LLM_API_KEY` (old Groq config) deleted, so the file config is used. Groq is not used for Strix anymore.
+- **When the model hits its cap/limit, change the model in `~/.strix/cli-config.json` (`STRIX_LLM`) to another free+tools OpenRouter model from the fallback list above, then `strix --resume <run-name>` with the same flags.** Strix does not switch models by itself.
+- Scan not yet run.
