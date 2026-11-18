@@ -68,7 +68,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Live sign-in tested 2026-11-17: email link sent, confirm email arrived, link returned to our origin and created a session (new-user flow = "Confirm your email address" signup link). Round sync to `results` tested (1 row, PK blocks duplicates; loss path only, win path untested). Returning-user sign-in not tested (email limit).
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
 - [x] Auth redirect checked: the emailed link redirects only to our own origin (allow-list is prod + localhost). Foreign `redirect_to` falls back to the site URL (see `docs/work-log/quiz-tests.md`).
-- [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependency-update bot (Dependabot) not added._
+- [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependabot added (`.github/dependabot.yml`, weekly npm + actions, minor/patch grouped)._
 - [x] **Scan run 2026-11-18 against local prod build: 1 LOW finding (public answer bank, accepted, client-side game by design), 0 Critical/High/Medium; fixes none. Remaining: re-scan against a test Supabase project once delete-account key is wired. See `docs/work-log/quiz-strix.md`, `docs/strix-instructions.txt`.** Strix (AI pentest agent): install per its README (needs Docker + an LLM API key), then scan this repo and the deployed staging/preview URL. Only target our own site and our own Supabase test project, never production or third-party services. Triage findings, fix real ones, re-scan, and note results here.
 
 ## Later (only once real players show up)
