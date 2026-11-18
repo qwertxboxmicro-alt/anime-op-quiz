@@ -73,10 +73,11 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 ## Later (only once real players show up)
 
 - [ ] Global stats (needs aggregate counts across all users): "Only 3% got it at 0.1s" (Supabase: `results(date, tries)` counts).
-- [ ] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
+- [x] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
 - [x] Endless / practice mode (random openings). _Code: `randomOpening` in `Game.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
-- [ ] Endings (ED) mode, hard mode (start at 0.05s), decade filters.
-- [ ] Streaks, archive of past days.
+- [ ] Endings (ED) mode, decade filters.
+- [x] Hard mode (start at 0.05s). _Code: `SCHEDULES["0.05"]`, Endless "Start at" option._
+- [x] Streaks (stats modal), archive of past days. _Code: Archive tab in `Game.tsx` replays `openingFor(day)`; not saved to `opq-v1`, not counted in stats._
 
 ## Open questions
 

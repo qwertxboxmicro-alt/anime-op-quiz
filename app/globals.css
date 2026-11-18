@@ -97,3 +97,9 @@ input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .modal input { width: 100%; }
 .modal .primary:disabled { opacity: .5; cursor: default; }
 .modes .icon.on { color: var(--accent); border-color: var(--accent); }
+.opts select { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: .75rem; }
+/* Streamer mode: bigger type, wide layout, answer blurred until hovered, no cover art in suggestions */
+html.streamer { font-size: 22px; }
+.streamer .game, .streamer .modes { max-width: 900px; }
+.streamer .sugg img { display: none; }
+.streamer .reveal:not(:hover) { filter: blur(16px); }
