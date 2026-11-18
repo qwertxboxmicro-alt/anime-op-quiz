@@ -32,7 +32,7 @@ row: won=false tries=6 ; PK = PRIMARY KEY (user_id, day)
 ```
 Before reload and after reload: still 1 row. PK blocks a second row for the same (user, day).
 Note: a direct duplicate INSERT was not attempted (would need the user's JWT, which must not be extracted); duplicate protection is shown by the PK plus the unchanged count after a replay. Day 20774 = epoch days (2026-11-17); UI label "#1" is a separate counter.
-Win path (`won=true`) was not exercised; only a loss was written.
+Win path: see §8.
 
 ## 4. Returning-user sign-in: NOT TESTED
 Built-in mailer allows 2 emails/hour and the first sign-in used one; budget not safe to spend. Owner: sign out, request a link, confirm session returns and Stats still show 1 played.
@@ -67,3 +67,16 @@ admin get user      -> 404 ; results rows for that user -> 0 (cascade works)
 reuse old token     -> 401
 ```
 Cleanup confirmed: admin user list shows 0 leftover test users (1 user total, the owner's, untouched). No app code changed. Not exercised: the Account dialog UI click-through.
+
+## 8. Win-round sync to `results` (2026-11-18): PASS (aggregate part blocked)
+Scratch script (not committed), service key from local `.env.local` only to create/delete 5 confirmed throwaway users (`opq-wintest-*@example.invalid`). Each user signed in with the anon key and called the exact `pushResult` upsert from `lib/cloud.ts` (`onConflict: "user_id,day", ignoreDuplicates: true`) on test day 79990 (valid, far from real puzzle days). Rows: win/1, win/2, win/3, win/6, loss/6.
+```
+PASS pushResult accepted for wins (tries 1,2,3,6) and loss
+PASS owner reads own win row as {day, won:true, tries:1}; user_id defaulted to auth.uid()
+PASS duplicate pushResult (different tries) -> no error, row unchanged
+PASS plain duplicate INSERT -> 23505 (PK)
+FAIL global_day_stats x3 -> PGRST202 "function not found in schema cache"
+cleanup: 5 users deleted, 0 leftover rows for day 79990
+```
+Win shape matches code: `Game.tsx` pushes `{day, won: won(guesses), tries: guesses.length}`; constraints (`tries 1..6`, `won or tries=6`) accept it. No app bug found, no code changed.
+Blocked: `public.global_day_stats` (migration `0003_global_stats.sql`) is **not applied on the live project**, so the aggregate read of win rows was not verified (the app degrades to null, by design). After 0003 is applied, re-run the aggregate checks: with 5 rows on one day expect `played=5, wins=4, dist=[1,1,1,0,0,1]`; with 4 rows expect no row (k>=5 hiding); anon call returns no `user_id`.
