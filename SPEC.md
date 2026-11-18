@@ -37,7 +37,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 ## Stack
 
-- Next.js (static/edge), deploy on Vercel.
+- Next.js (static/edge), deployed on Vercel, Git-linked to GitHub `qwertxboxmicro-alt/anime-op-quiz` (2026-11-17): pushes to `main` deploy to production. Env vars set for Production only.
 - Supabase for auth + `results` table (accounts and synced stats). Game works without it.
 
 ## Accounts & synced stats (Supabase)
@@ -50,7 +50,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
 - [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
-- [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._
+- [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._ Live check 2026-11-18: `POST /api/delete-account` returns 503 until the key is set.
 - [ ] Optional: Google/Discord sign-in.
 
 ## Security testing
@@ -63,12 +63,12 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Supabase Auth config checked via API: email confirmation on, redirect allow-list only prod + localhost, service_role/secret key not in Vercel env vars. RLS policies + grants verified live (anon none, authenticated select+insert only after `0002`).
 - [ ] Email send limit is 2/hour on Supabase's built-in mailer; set custom SMTP before real traffic. **Deferred (decided 2026-11-17): do this later with Resend.** Plan: owner has a domain; add a `mail.<domain>` sending subdomain in Resend, add its DNS records (SPF, DKIM, return-path), create an API key (owner creates it, pasted into Supabase Dashboard > Auth > SMTP, never into chat/repo), set host `smtp.resend.com`, port 465, user `resend`, sender `noreply@mail.<domain>`, then raise the Auth email rate limit and re-test sign-in. Also add the domain to the Supabase redirect allow-list + Vercel domains if the app moves to it.
 - [x] Headers verified on deployed site with `curl -I` (CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS).
-- [ ] Check the browser console on the deployed site for CSP violations.
-- [x] Live sign-in tested 2026-11-17: email link sent, confirm email arrived, link returned to our origin and created a session (new-user flow = "Confirm your email address" signup link). Not yet tested: a round syncing to `results`, returning-user sign-in.
+- [x] Browser console on the deployed site: no CSP violations or errors (`docs/work-log/quiz-tests.md`). Open: audio `media-src` not exercised by a real Play click; owner to click Play once with DevTools open.
+- [x] Live sign-in tested 2026-11-17: email link sent, confirm email arrived, link returned to our origin and created a session (new-user flow = "Confirm your email address" signup link). Round sync to `results` tested (1 row, PK blocks duplicates; loss path only, win path untested). Returning-user sign-in not tested (email limit).
 - [ ] Magic-link abuse: confirm Supabase email rate limit, consider CAPTCHA (Turnstile) on sign-in if abused.
 - [x] Auth redirect checked: the emailed link redirects only to our own origin (allow-list is prod + localhost). Foreign `redirect_to` falls back to the site URL (see `docs/work-log/quiz-tests.md`).
 - [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependency-update bot (Dependabot) not added._
-- [ ] Strix (AI pentest agent): install per its README (needs Docker + an LLM API key), then scan this repo and the deployed staging/preview URL. Only target our own site and our own Supabase test project, never production or third-party services. Triage findings, fix real ones, re-scan, and note results here.
+- [ ] **Blocked 2026-11-17: OpenRouter key in `~/.strix/cli-config.json` expired (401), scan never ran (0 findings, no coverage). Owner must supply a new key; see `docs/work-log/quiz-strix.md`, `docs/strix-instructions.txt`.** Strix (AI pentest agent): install per its README (needs Docker + an LLM API key), then scan this repo and the deployed staging/preview URL. Only target our own site and our own Supabase test project, never production or third-party services. Triage findings, fix real ones, re-scan, and note results here.
 
 ## Later (only once real players show up)
 
@@ -80,6 +80,6 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 ## Open questions
 
-- [ ] Final name + domain.
+- [ ] Final name + domain. (Live site currently shows "OPspot".)
 - [ ] Guess the anime only, or bonus point for song title?
 - [ ] Which ~60 openings for launch?
