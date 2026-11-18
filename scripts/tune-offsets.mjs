@@ -3,7 +3,8 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const ids = [...readFileSync("data/openings.ts", "utf8").matchAll(/itunesTrackId: (\d+)/g)].map((m) => +m[1]);
+const F = process.argv.find((a) => a.endsWith(".ts")) ?? "data/openings.ts";
+const ids = [...readFileSync(F, "utf8").matchAll(/itunesTrackId: (\d+)/g)].map((m) => +m[1]);
 const SR = 8000, FR = 400; // 50ms frames
 const found = {};
 for (const id of ids) {
@@ -30,7 +31,7 @@ for (const id of ids) {
 // --write: store offsets into data/openings.ts. Only touches entries still at 0 unless --all.
 if (process.argv.includes("--write")) {
   const all = process.argv.includes("--all");
-  const src = readFileSync("data/openings.ts", "utf8").replace(/itunesTrackId: (\d+), startOffset: ([\d.]+)/g, (m, id, off) =>
+  const src = readFileSync(F, "utf8").replace(/itunesTrackId: (\d+), startOffset: ([\d.]+)/g, (m, id, off) =>
     found[id] && (all || +off === 0) ? `itunesTrackId: ${id}, startOffset: ${+found[id]}` : m);
-  writeFileSync("data/openings.ts", src);
+  writeFileSync(F, src);
 }
