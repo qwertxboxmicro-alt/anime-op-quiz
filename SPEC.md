@@ -76,7 +76,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Global stats: "N% got it today, most in X tries" in stats modal via `global_day_stats` RPC. Migration `0003_global_stats.sql` is written but NOT applied to live Supabase (line hides until it is).
 - [x] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
 - [x] Endless / practice mode (random openings). _Code: `randomOpening` in `Game.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
-- [ ] Endings (ED) mode, decade filters.
+- [x] Endings (ED) mode, decade filters. _Code: `data/endings.ts` (13 ED entries, Endless-only) + `year` on `Opening`; Type/Era rows in `Game.tsx` Endless; daily/archive/stats untouched. Empty filter combo falls back to the whole pool._
 - [x] Hard mode (start at 0.05s). _Code: `SCHEDULES["0.05"]`, Endless "Start at" option._
 - [x] Streaks (stats modal), archive of past days. _Code: Archive tab in `Game.tsx` replays `openingFor(day)`; not saved to `opq-v1`, not counted in stats._
 

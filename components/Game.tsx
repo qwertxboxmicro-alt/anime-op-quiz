@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, poster, puzzleNo, shareText, todayNum, won, type Guess, type Meta } from "@/lib/game";
 import { OPENINGS, type Opening } from "@/data/openings";
+import { ENDINGS } from "@/data/endings";
 import { loadClip, play, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
@@ -15,9 +16,14 @@ type Entry = string[]; // [display, coverUrl, ...alt search terms]
 const KEY = "opq-v1";
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-const randomOpening = (d: number) => {
-  const pool = OPENINGS.filter((o) => !d || o.diff === d);
-  return pool[Math.floor(Math.random() * pool.length)];
+const DECADES = [0, 1990, 2000, 2010, 2020] as const; // 0 = all; 1990 = 1999 and earlier
+const decadeOf = (y: number) => Math.max(1990, Math.floor(y / 10) * 10);
+const pick1 = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+// d = difficulty, dec = decade (0 = any), ed = endings pool. Empty filter combo falls back to the whole pool.
+const randomOpening = (d: number, dec = 0, ed = false) => {
+  const all = ed ? ENDINGS : OPENINGS;
+  const pool = all.filter((o) => (!d || o.diff === d) && (!dec || decadeOf(o.year) === dec));
+  return pick1(pool.length ? pool : all);
 };
 
 function useCountdown() {
@@ -51,6 +57,8 @@ export default function Game() {
     } catch {}
   }, [streamer]);
   const [diff, setDiff] = useState<0 | 1 | 2 | 3>(0); // 0 = all
+  const [decade, setDecade] = useState<number>(0);
+  const [ed, setEd] = useState(false);
   const [round, setRound] = useState(0);
   const [opts, setOpts] = useState({ start: "0.1", random: false });
   useEffect(() => {
@@ -88,8 +96,8 @@ export default function Game() {
     } catch {}
   }, []);
 
-  const next = (d: number = diff) => {
-    setEndless(randomOpening(d));
+  const next = (d: number = diff, dec: number = decade, e: boolean = ed) => {
+    setEndless(randomOpening(d, dec, e));
     setRound((r) => r + 1);
   };
   if (day === null) return null;
@@ -125,9 +133,23 @@ export default function Game() {
         </div>
       )}
       {practice && (
+        <div className="opts">
+          <span>Type</span>
+          {([false, true] as const).map((e) => (
+            <button key={String(e)} className={ed === e ? "on" : ""} onClick={() => { setEd(e); next(diff, decade, e); }}>{e ? "Endings" : "Openings"}</button>
+          ))}
+          <span>Era</span>
+          <select value={decade} onChange={(e) => { setDecade(Number(e.target.value)); next(diff, Number(e.target.value), ed); }} aria-label="Decade">
+            {DECADES.map((d) => (
+              <option key={d} value={d}>{d === 0 ? "All" : d === 1990 ? "≤1990s" : `${d}s`}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      {practice && (
         <div className="diffs">
           {(["All", "Easy", "Medium", "Hard"] as const).map((l, i) => (
-            <button key={l} className={`d${i} ${diff === i ? "on" : ""}`} onClick={() => { setDiff(i as 0 | 1 | 2 | 3); next(i); }}>{l}</button>
+            <button key={l} className={`d${i} ${diff === i ? "on" : ""}`} onClick={() => { setDiff(i as 0 | 1 | 2 | 3); next(i, decade, ed); }}>{l}</button>
           ))}
         </div>
       )}
