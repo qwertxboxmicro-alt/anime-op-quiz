@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
-import { cloudEnabled, deleteAccount, fetchRows, sendLink, signOut, statsFromRows } from "@/lib/cloud";
+import { cloudEnabled, deleteAccount, fetchGlobalDay, fetchRows, sendLink, type GlobalDay, signOut, statsFromRows } from "@/lib/cloud";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -36,7 +36,13 @@ export function StatsModal({ user, day, onClose, onAccount }: { user: User | nul
   useEffect(() => {
     if (user) fetchRows().then((rows) => setS(statsFromRows(rows, day)));
   }, [user, day]);
+  const [g, setG] = useState<GlobalDay | null>(null);
+  useEffect(() => {
+    fetchGlobalDay(day).then(setG);
+  }, [day]);
   const max = Math.max(1, ...s.dist);
+  // Most common winning try count, for the "N% got it in X tries" line.
+  const top = g ? g.dist.indexOf(Math.max(...g.dist)) + 1 : 0;
   return (
     <Shell title="Stats" onClose={onClose}>
       <div className="nums">
@@ -53,6 +59,11 @@ export function StatsModal({ user, day, onClose, onAccount }: { user: User | nul
           </li>
         ))}
       </ol>
+      {g && g.played > 0 && g.wins > 0 && (
+        <p className="how">
+          {Math.round((g.wins / g.played) * 100)}% got it today, most in {top} {top === 1 ? "try" : "tries"}.
+        </p>
+      )}
       {cloudEnabled && !user && (
         <button className="primary" onClick={onAccount}>Sign in to save stats</button>
       )}

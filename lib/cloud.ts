@@ -72,3 +72,17 @@ export function statsFromRows(rows: Row[], today: number): Stats {
   s.streak = s.last >= today - 1 ? run : 0; // streak lapses if you skip a whole day
   return s;
 }
+
+export type GlobalDay = { played: number; wins: number; dist: number[] };
+
+// Aggregate counts for one day (migration 0003). null when unconfigured, function missing, or too few players.
+export async function fetchGlobalDay(day: number): Promise<GlobalDay | null> {
+  try {
+    const { data, error } = (await sb()?.rpc("global_day_stats", { p_day: day })) ?? { data: null, error: null };
+    const r = Array.isArray(data) ? data[0] : null;
+    if (error || !r || !Array.isArray(r.dist)) return null;
+    return { played: Number(r.played), wins: Number(r.wins), dist: r.dist as number[] };
+  } catch {
+    return null;
+  }
+}

@@ -72,7 +72,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 ## Later (only once real players show up)
 
-- [ ] Global stats (needs aggregate counts across all users): "Only 3% got it at 0.1s" (Supabase: `results(date, tries)` counts).
+- [x] Global stats: "N% got it today, most in X tries" in stats modal via `global_day_stats` RPC. Migration `0003_global_stats.sql` is written but NOT applied to live Supabase (line hides until it is).
 - [x] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
 - [x] Endless / practice mode (random openings). _Code: `randomOpening` in `Game.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
 - [ ] Endings (ED) mode, decade filters.
