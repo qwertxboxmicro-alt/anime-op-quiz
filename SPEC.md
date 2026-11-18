@@ -49,6 +49,7 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] On sign-in, today's finished local game is uploaded.
 - [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
 - [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
+- [ ] Apply `supabase/migrations/0003_global_stats.sql` to the live project (needs owner's Supabase access), then check the global-stats line appears.
 - [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
 - [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._ Live check 2026-11-18: `POST /api/delete-account` returned 503 until the key was set. Key now set in `.env.local` and Vercel Production, redeployed; a fake bearer token returns 401 "Not signed in." (key is live, bad token rejected). Real deletion tested live 2026-11-18 (throwaway user via admin API + local route POST): 200, user and `results` rows gone, old token then 401, cross-origin 403; see `docs/work-log/quiz-tests.md` §7. Account dialog UI click-through not exercised.
 - [ ] Optional: Google/Discord sign-in.
@@ -83,4 +84,4 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 - [ ] Final name + domain. (Live site currently shows "OPspot".)
 - [ ] Guess the anime only, or bonus point for song title?
-- [ ] Which ~60 openings for launch?
+- [x] Which ~60 openings for launch? 60 in `data/openings.ts` (2026-11-18); start offsets are heuristic, not checked by ear. Owner to review the picks.
