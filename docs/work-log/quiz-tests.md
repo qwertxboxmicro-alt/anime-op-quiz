@@ -44,3 +44,26 @@ curl -I /  -> 200; CSP present (default-src 'self'; script-src 'self' 'unsafe-in
 3 sampled /_next/static/immutable/chunks/*.js.map -> 403 (not served)
 ```
 Observations (not failures): `Access-Control-Allow-Origin: *` on the HTML (Vercel static default; harmless for a public page). CSP allows `'unsafe-inline'` scripts (needed by Next inline bootstrap; nonce-based CSP is the upgrade path). `/robots.txt` is 404.
+
+## 6. RLS script against live project (2026-11-18): PASS 12/12
+Live project has email confirmation ON, so `scripts/security-test.mjs` as written would skip the two-user checks (and mail example.com). Ran its exact checks from a scratch copy that creates two confirmed throwaway users via the admin API (`opq-test-<random>@example.invalid`), signs them in with password, then deletes both. Anon key only for all checks.
+```
+PASS anon cannot read / insert results
+PASS user A inserts own result (201)
+PASS user B cannot see A's rows / insert as A / update A's row
+PASS user A cannot rewrite or delete own result (no update/delete policy)
+PASS constraints reject tries=0, tries=99, day far in future, loss with 2 tries
+cleanup: both users deleted (200)
+```
+Possible follow-up: make the script use the admin API when `SUPABASE_SERVICE_ROLE_KEY` is set, so it works on confirmed-email projects.
+
+## 7. Real account deletion (2026-11-18): PASS
+Local `npm run dev` (port 3123) with live `.env.local` values, one throwaway confirmed user + 1 `results` row:
+```
+no token            -> 401
+cross-origin Origin -> 403, user still exists
+real delete (token) -> 200 {"ok":true}
+admin get user      -> 404 ; results rows for that user -> 0 (cascade works)
+reuse old token     -> 401
+```
+Cleanup confirmed: admin user list shows 0 leftover test users (1 user total, the owner's, untouched). No app code changed. Not exercised: the Account dialog UI click-through.
