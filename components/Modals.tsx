@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
+import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
 import { cloudEnabled, deleteAccount, fetchGlobalDay, fetchRows, sendLink, type GlobalDay, signOut, statsFromRows } from "@/lib/cloud";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -77,6 +78,8 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [widget, setWidget] = useState(0);
   const remove = async () => {
     setBusy(true);
     const err = await deleteAccount();
@@ -87,10 +90,13 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
   };
   const send = async () => {
     setBusy(true);
-    const err = await sendLink(email.trim());
+    const err = await sendLink(email.trim(), captcha ?? undefined);
     setMsg(err ?? "Check your email for a sign-in link.");
+    setCaptcha(null);
+    setWidget((n) => n + 1); // token is single-use: fresh widget for the next attempt
     setBusy(false);
   };
+  const needCaptcha = !!turnstileSiteKey && !captcha;
   return (
     <Shell title="Account" onClose={onClose}>
       {user ? (
@@ -113,8 +119,9 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
         <>
           <p className="how">Sign in with a one-time email link to keep your stats across devices. No password.</p>
           <input type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
-            onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && send()} />
-          <button className="primary" disabled={busy || !/^\S+@\S+\.\S+$/.test(email.trim())} onClick={send}>Send link</button>
+            onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
+          <Turnstile key={widget} onToken={setCaptcha} />
+          <button className="primary" disabled={busy || needCaptcha || !/^\S+@\S+\.\S+$/.test(email.trim())} onClick={send}>Send link</button>
           {msg && <p className="how" role="status">{msg}</p>}
         </>
       )}

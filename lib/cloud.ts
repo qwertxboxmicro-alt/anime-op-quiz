@@ -25,8 +25,8 @@ export function onUser(cb: (u: User | null) => void) {
   return () => data.subscription.unsubscribe();
 }
 
-export async function sendLink(email: string) {
-  const { error } = await sb()!.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+export async function sendLink(email: string, captchaToken?: string) {
+  const { error } = await sb()!.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin, captchaToken } });
   return error?.message ?? null;
 }
 
