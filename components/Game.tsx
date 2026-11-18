@@ -37,6 +37,19 @@ export default function Game() {
   const [day, setDay] = useState<number | null>(null);
   useEffect(() => setDay(todayNum()), []);
   const [daily, setDaily] = useState(true);
+  const [arch, setArch] = useState<number | null>(null); // past day being replayed (never saved or counted)
+  const [streamer, setStreamer] = useState(false);
+  useEffect(() => {
+    try {
+      setStreamer(localStorage.getItem("opq-streamer") === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("streamer", streamer);
+    try {
+      localStorage.setItem("opq-streamer", streamer ? "1" : "0");
+    } catch {}
+  }, [streamer]);
   const [diff, setDiff] = useState<0 | 1 | 2 | 3>(0); // 0 = all
   const [round, setRound] = useState(0);
   const [opts, setOpts] = useState({ start: "0.1", random: false });
@@ -80,14 +93,19 @@ export default function Game() {
     setRound((r) => r + 1);
   };
   if (day === null) return null;
-  const opening = daily || !endless ? openingFor(day) : endless;
+  const practice = !daily && arch === null;
+  const opening = daily ? openingFor(day) : arch !== null ? openingFor(arch) : endless ?? openingFor(day);
 
   return (
     <>
       <nav className="modes">
         <button className="icon" onClick={() => setModal("how")} aria-label="How to play">?</button>
-        <button className={daily ? "on" : ""} onClick={() => setDaily(true)}>Daily</button>
-        <button className={!daily ? "on" : ""} onClick={() => { setDaily(false); if (!endless) next(); }}>Endless</button>
+        <button className={daily ? "on" : ""} onClick={() => { setDaily(true); setArch(null); }}>Daily</button>
+        <button className={practice ? "on" : ""} onClick={() => { setDaily(false); setArch(null); if (!endless) next(); }}>Endless</button>
+        {puzzleNo(day) > 1 && (
+          <button className={!daily && arch !== null ? "on" : ""} onClick={() => { setDaily(false); setArch(arch ?? day - 1); }}>Archive</button>
+        )}
+        <button className={`icon ${streamer ? "on" : ""}`} onClick={() => setStreamer(!streamer)} aria-label="Streamer mode" aria-pressed={streamer}>&#128250;</button>
         <button className="icon" onClick={() => setModal("stats")} aria-label="Stats">&#9783;</button>
         {cloudEnabled && (
           <button className={`icon ${user ? "on" : ""}`} onClick={() => setModal("account")} aria-label="Account">&#9786;</button>
@@ -96,19 +114,29 @@ export default function Game() {
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
       {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
-      {!daily && (
+      {!daily && arch !== null && (
+        <div className="opts">
+          <span>Puzzle</span>
+          <select value={arch} onChange={(e) => setArch(Number(e.target.value))} aria-label="Past puzzle">
+            {Array.from({ length: puzzleNo(day) - 1 }, (_, i) => day - 1 - i).map((d) => (
+              <option key={d} value={d}>#{puzzleNo(d)}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      {practice && (
         <div className="diffs">
           {(["All", "Easy", "Medium", "Hard"] as const).map((l, i) => (
             <button key={l} className={`d${i} ${diff === i ? "on" : ""}`} onClick={() => { setDiff(i as 0 | 1 | 2 | 3); next(i); }}>{l}</button>
           ))}
         </div>
       )}
-      {!daily && (
+      {practice && (
         <div className="opts">
           <span>Start at</span>
-          {["0.1", "0.5", "2"].map((k) => (
+          {["0.05", "0.1", "0.5", "2"].map((k) => (
             <button key={k} className={opts.start === k ? "on" : ""} onClick={() => setOpt({ start: k })}>
-              {k}s
+              {k}s{k === "0.05" ? " (hard)" : ""}
             </button>
           ))}
           <span>From</span>
@@ -121,19 +149,20 @@ export default function Game() {
         </div>
       )}
       <Play
-        key={daily ? "daily" : `e${round}`}
-        day={day}
+        key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
+        day={arch ?? day}
         opening={opening}
         daily={daily}
-        clips={daily ? CLIPS : SCHEDULES[opts.start]}
-        random={!daily && opts.random}
+        archive={arch !== null}
+        clips={practice ? SCHEDULES[opts.start] : CLIPS}
+        random={practice && opts.random}
         onNext={() => next()}
       />
     </>
   );
 }
 
-function Play({ day, opening, daily, clips, random, onNext }: { day: number; opening: Opening; daily: boolean; clips: readonly number[]; random: boolean; onNext: () => void }) {
+function Play({ day, opening, daily, archive, clips, random, onNext }: { day: number; opening: Opening; daily: boolean; archive: boolean; clips: readonly number[]; random: boolean; onNext: () => void }) {
   const [offset, setOffset] = useState(opening.startOffset);
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [ready, setReady] = useState(false);
@@ -219,7 +248,7 @@ function Play({ day, opening, daily, clips, random, onNext }: { day: number; ope
   };
 
   const share = async () => {
-    const t = shareText(day, guesses, daily, clips);
+    const t = shareText(day, guesses, daily || archive, clips);
     try {
       if (navigator.share) await navigator.share({ text: t });
       else {
@@ -238,7 +267,7 @@ function Play({ day, opening, daily, clips, random, onNext }: { day: number; ope
         <h1>
           OP<span>spot</span>
         </h1>
-        <p>{daily ? `Daily anime opening #${puzzleNo(day)}` : "Endless practice"}</p>
+        <p>{daily ? `Daily anime opening #${puzzleNo(day)}` : archive ? `Archive #${puzzleNo(day)}` : "Endless practice"}</p>
       </header>
 
       <ol className="bar" aria-label="Clip lengths">
@@ -350,7 +379,7 @@ function Play({ day, opening, daily, clips, random, onNext }: { day: number; ope
             <button className="primary" onClick={share}>
               {copied ? "Copied!" : "Share"}
             </button>
-            {!daily && <button className="primary" onClick={onNext}>Next song</button>}
+            {!daily && !archive && <button className="primary" onClick={onNext}>Next song</button>}
             {meta && (
               <a href={meta.link} target="_blank" rel="noreferrer">
                 Apple Music ↗

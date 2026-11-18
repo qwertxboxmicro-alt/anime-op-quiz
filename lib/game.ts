@@ -3,6 +3,7 @@ import { OPENINGS, type Opening } from "@/data/openings";
 export const CLIPS: readonly number[] = [0.1, 0.5, 1, 2, 4, 8];
 // Endless-mode starting lengths; all have 6 steps. Daily always uses CLIPS.
 export const SCHEDULES: Record<string, readonly number[]> = {
+  "0.05": [0.05, 0.1, 0.5, 1, 2, 4], // hard
   "0.1": CLIPS,
   "0.5": [0.5, 1, 2, 4, 8, 12],
   "2": [2, 4, 8, 12, 16, 20],
