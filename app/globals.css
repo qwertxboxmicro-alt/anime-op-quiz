@@ -54,7 +54,7 @@ a { color: inherit; }
 .item { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 18px; border-radius: 10px; background: var(--card2); color: var(--soft); font-weight: 600; text-align: left; transition: background-color .15s, color .15s; }
 .item.sm { height: 40px; padding: 0 14px; font-size: .8125rem; }
 .item:hover { background: var(--line); color: var(--text); }
-.item.on { background: color-mix(in srgb, var(--accent) 13%, #000); color: var(--accent); }
+.item.on { background: color-mix(in srgb, var(--accent) 10%, #000); color: var(--accent); }
 .reroll { display: flex; align-items: center; gap: 10px; padding: 6px 14px; color: var(--soft); font-weight: 600; font-size: .8125rem; }
 .reroll:hover { color: var(--text); }
 .row-card { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px 0 14px; border-radius: 10px; background: var(--card2); color: var(--soft); font-weight: 600; font-size: .8125rem; }
@@ -64,9 +64,9 @@ a { color: inherit; }
 .tog[aria-checked="true"] { background: var(--accent); }
 .tog[aria-checked="true"] i { transform: translateX(12px); background: #04130b; }
 .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-.chips button { height: 31px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 10%, #000); color: color-mix(in srgb, var(--accent) 80%, #fff); font-size: .75rem; font-weight: 700; }
+.chips button { height: 31px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 8%, #000); color: color-mix(in srgb, var(--accent) 85%, #000); font-size: .75rem; font-weight: 700; }
 .chips button:hover { background: color-mix(in srgb, var(--accent) 16%, var(--bg)); }
-.chips button.on { background: var(--accent); color: #04130b; }
+.chips button.on { background: color-mix(in srgb, var(--accent) 80%, #000); color: #04130b; }
 .vol { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; cursor: pointer; background: linear-gradient(90deg, var(--accent) var(--v, 80%), var(--card2) var(--v, 80%)); }
 .vol::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--text); opacity: 0; transition: opacity .15s; }
 .vol:hover::-webkit-slider-thumb, .vol:focus-visible::-webkit-slider-thumb { opacity: 1; }

@@ -42,11 +42,11 @@ function makeWorld(W: number, H: number) {
   const hwins: Win[] = houses.flatMap((h) => (r() < 0.6 ? [{ x: h.x + 5 + Math.floor(r() * (h.w - 12)), y: ground - h.h + 4 + Math.floor(r() * (h.h - 10)), k: r() }] : []));
   const clouds: Cloud[] = Array.from({ length: 9 }, (_, i) => ({ x: r() * W * 1.4, y: hz * (0.12 + r() * 0.55), w: 26 + r() * 50, v: 2 + r() * 3.5, front: i % 3 === 0 }));
   const petals: Petal[] = Array.from({ length: Math.round(W / 9) }, () => ({ x: r() * W, y: r() * H, vx: -8 - r() * 10, vy: 7 + r() * 9, p: r() * 6, c: r() < 0.5 ? "#ffb7cf" : "#f48fb1" }));
-  const trees = [0.3, 0.63, 0.97].map((f) => {
-    const R = Math.round(H * 0.06 * (0.8 + r() * 0.5));
+  const trees = [0.27, 0.66, 0.93].map((f, i) => {
+    const R = Math.round(H * 0.06 * [1.15, 0.75, 0.95][i]);
     // Canopy = cluster of puffs around the crown, each with dark/mid/light tone.
-    const puffs = Array.from({ length: 9 }, () => ({ dx: (r() - 0.5) * R * 2.4, dy: (r() - 0.6) * R * 1.1, rx: R * (0.45 + r() * 0.35), ry: R * (0.35 + r() * 0.25) }));
-    return { x: Math.round(W * f), R, puffs };
+    const puffs = Array.from({ length: 7 + i * 2 }, () => ({ dx: (r() - 0.5) * R * 2.4, dy: (r() - 0.6) * R * 1.1, rx: R * (0.45 + r() * 0.35), ry: R * (0.35 + r() * 0.25) }));
+    return { x: Math.round(W * f + (r() - 0.5) * 20), R, puffs };
   });
   const poles = [0.12, 0.47, 0.86].map((f) => Math.round(W * f));
   return { hz, ground, rail: Math.round(H * 0.855), stars, mount, far, bldgs, wins, houses, hwins, clouds, petals, poles, trees };
@@ -100,10 +100,13 @@ export default function Scene() {
       SKY.forEach((col, i) => rect(0, i * bh, W, bh + 1, col));
       for (let i = 1; i < SKY.length; i++) {
         g.fillStyle = SKY[i];
-        const y = Math.round(i * bh) - 2;
+        const y = Math.round(i * bh);
         for (let x = 0; x < W; x += 2) {
-          g.fillRect(x, y, 1, 1);
-          g.fillRect(x + 1, y + 1, 1, 1);
+          g.fillRect(x + 1, y - 4, 1, 1);
+          if (x % 4 === 0) g.fillRect(x, y - 6, 1, 1);
+          g.fillRect(x, y - 2, 1, 1);
+          g.fillRect(x + 1, y - 1, 1, 1);
+          g.fillRect(x, y - 3, 1, 1);
         }
       }
       for (const s of world.stars) {
