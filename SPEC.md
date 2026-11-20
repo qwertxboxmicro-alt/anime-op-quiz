@@ -75,11 +75,11 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 
 Rule: daily puzzle, stats, streak display and global stats stay free for everyone. Paid = extras only.
 
-- [ ] Supporter tier: price TBD (rough idea ~$2/month or ~$15/year). Entitlement stored per Supabase user (`supporters` table, written only by a payment webhook route using the service role key, never client-side). Payment provider TBD (Stripe; Razorpay if India).
+- [x] Supporter tier entitlement core (price still TBD, rough idea ~$2/month or ~$15/year). _Built: migration `0004_supporters.sql` (not applied to live), webhook `app/api/razorpay/webhook/route.ts` (HMAC-verified, fail-closed, service role upsert), subscribe stub `app/api/razorpay/subscribe/route.ts`, client hook `lib/useSupporter.ts` (`useSupporter()` → `{isSupporter, loading}`). Provider: Razorpay (untested live)._
 - [ ] Streak freeze: a missed day doesn't break the streak. Cap and refill rule TBD.
 - [ ] Private friend leagues: create/join by invite code, shared leaderboard + group stats. Needs new tables + RLS (members read only their own league).
 - [ ] Cosmetics: themes and badges, no gameplay effect.
-- [ ] Archive of past dailies becomes **paid**: go back to older days and play them. Today the Archive tab in `Game.tsx` is free and replays `openingFor(day)` without saving to `opq-v1` or stats; gate it behind Supporter. Decide: do archive runs count toward stats/streak (currently no, keep no).
+- [x] Archive of past dailies becomes **paid**: go back to older days and play them. _Built: `Game.tsx` shows `ArchiveLocked` (upgrade prompt) unless `useSupporter().isSupporter`; supporters get the unchanged archive. Archive runs still do not save to `opq-v1` or count toward stats/streak._
 - [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
 - Never paywall: daily puzzle, stats, sharing. Audio stays iTunes previews only (no rehosting).
 

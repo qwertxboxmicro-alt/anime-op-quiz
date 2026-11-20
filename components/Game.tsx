@@ -10,6 +10,7 @@ import { loadClip, play, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
 import { cloudEnabled, onUser, pushResult } from "@/lib/cloud";
+import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
 import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
@@ -79,6 +80,7 @@ export default function Game() {
   const [modal, setModal] = useState<"how" | "stats" | "account" | null>(null);
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
+  const { isSupporter, loading: supLoading } = useSupporter();
   // On sign-in, upload today's finished local game so it counts toward the account.
   useEffect(() => {
     if (!user || day === null) return;
@@ -122,7 +124,7 @@ export default function Game() {
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
       {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
-      {!daily && arch !== null && (
+      {!daily && arch !== null && isSupporter && (
         <div className="opts">
           <span>Puzzle</span>
           <select value={arch} onChange={(e) => setArch(Number(e.target.value))} aria-label="Past puzzle">
@@ -170,17 +172,46 @@ export default function Game() {
           </button>
         </div>
       )}
-      <Play
-        key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
-        day={arch ?? day}
-        opening={opening}
-        daily={daily}
-        archive={arch !== null}
-        clips={practice ? SCHEDULES[opts.start] : CLIPS}
-        random={practice && opts.random}
-        onNext={() => next()}
-      />
+      {arch !== null && !isSupporter ? (
+        <ArchiveLocked loading={supLoading} />
+      ) : (
+        <Play
+          key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
+          day={arch ?? day}
+          opening={opening}
+          daily={daily}
+          archive={arch !== null}
+          clips={practice ? SCHEDULES[opts.start] : CLIPS}
+          random={practice && opts.random}
+          onNext={() => next()}
+        />
+      )}
     </>
+  );
+}
+
+// Archive is a Supporter perk. Daily, stats and sharing stay free.
+function ArchiveLocked({ loading }: { loading: boolean }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  if (loading) return <p className="opts">Checking Supporter status…</p>;
+  return (
+    <div className="opts">
+      <p>Past puzzles are a Supporter perk. Daily, stats and sharing stay free.</p>
+      <button
+        className="primary"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          const r = await startSupporterCheckout();
+          if (r.url) window.location.href = r.url;
+          else { setErr(r.error ?? "Could not start subscription."); setBusy(false); }
+        }}
+      >
+        Become a Supporter
+      </button>
+      {err && <p>{err}</p>}
+    </div>
   );
 }
 
