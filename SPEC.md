@@ -11,12 +11,12 @@ kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny cl
 
 ## Core loop (MVP)
 
-- [x] One opening per day, same for everyone (picked by date). _Code: `openingFor(day)` in `lib/game.ts`._
-- [x] Clip lengths unlock per miss: 0.1s, 0.5s, 1s, 2s, 4s, 8s (6 tries). _Code: `CLIPS` in `lib/game.ts`._
+- [x] One opening per day, same for everyone (picked by date). _Code: `openingFor(day)` in `games/op-quiz/game.ts`._
+- [x] Clip lengths unlock per miss: 0.1s, 0.5s, 1s, 2s, 4s, 8s (6 tries). _Code: `CLIPS` in `games/op-quiz/game.ts`._
 - [x] Player guesses the **anime title** (not song title). Skip button = counts as a miss. _Code: `submit("", "skip")` adds a guess in `OpQuizGame.tsx`._
 - [x] Autocomplete over a list of anime titles (English + romaji). _Code: matches title + alt terms from `public/anime.json` (alts include romaji); not checked how complete the list is._
 - [x] Win/lose screen: anime, song, artist, cover art, link to Apple Music. _Code: result section in `OpQuizGame.tsx`._
-- [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `lib/game.ts`; format is `🎵 kikoe #N 0.5s <squares>` + origin (was `OP Quiz` until 2026-11-20); skips show ⬜._
+- [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `games/op-quiz/game.ts`; format is `🎵 kikoe #N 0.5s <squares>` + origin (was `OP Quiz` until 2026-11-20); skips show ⬜._
 - [x] One play per day per device (localStorage). _Code: `opq-v1` restores today's guesses. Accounts were added later (optional)._
 - [x] Countdown to next puzzle. _Code: `useCountdown` + `msToNext` (UTC midnight)._
 
@@ -37,7 +37,7 @@ kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny cl
 
 ## Stack
 
-- Next.js (static/edge), deployed on Vercel, Git-linked to GitHub `qwertxboxmicro-alt/anime-op-quiz` (2026-11-17): pushes to `main` deploy to production. Env vars set for Production only.
+- Next.js (static/edge), deployed on Vercel, Git-linked to GitHub `qwertxboxmicro-alt/hibidle` (renamed from `anime-op-quiz` 2026-11-20; Vercel project `hibidle`, Supabase project `hibidle`, same ref): pushes to `main` deploy to production. Since 2026-11-20 the game is served at `/op-quiz` inside the Hibidle hub (see Game hub). Env vars set for Production only.
 - Supabase for auth + `results` table (accounts and synced stats). Game works without it.
 
 ## Accounts & synced stats (Supabase)
@@ -50,9 +50,9 @@ kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny cl
 - [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
 - [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
 - [x] Applied `supabase/migrations/0003_global_stats.sql` to the live project 2026-11-18. Global-stats line shows once a day has 5+ players.
-- [x] Back-fill: finished days logged in `opq-days` (new, from this change) upload on sign-in, insert-only (existing rows never overwritten). _Code: `backfillLocal` in `lib/cloud.ts`, `logDay` in `lib/stats.ts`._ Days played before this shipped are not recoverable (only aggregates were stored).
+- [x] Back-fill: finished days logged in `opq-days` (new, from this change) upload on sign-in, insert-only (existing rows never overwritten). _Code: `backfillLocal` in `platform/cloud.ts`, `logDay` in `games/op-quiz/stats.ts`._ Days played before this shipped are not recoverable (only aggregates were stored).
 - [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._ Live check 2026-11-18: `POST /api/delete-account` returned 503 until the key was set. Key now set in `.env.local` and Vercel Production, redeployed; a fake bearer token returns 401 "Not signed in." (key is live, bad token rejected). Real deletion tested live 2026-11-18 (throwaway user via admin API + local route POST): 200, user and `results` rows gone, old token then 401, cross-origin 403; see `docs/work-log/quiz-tests.md` §7. Account dialog click-through verified locally 2026-11-20 (sign in, Delete account, user gone; `docs/work-log/quiz-tests.md` §11).
-- [x] Google/Discord sign-in: code done 2026-11-20 (`signInWith` in `lib/cloud.ts`, buttons in Account dialog). Owner must enable both providers in Supabase + Google/Discord consoles; see `docs/oauth-setup.md`. Not yet enabled, so untested live.
+- [x] Google/Discord sign-in: code done 2026-11-20 (`signInWith` in `platform/cloud.ts`, buttons in Account dialog). Owner must enable both providers in Supabase + Google/Discord consoles; see `docs/oauth-setup.md`. Not yet enabled, so untested live.
 
 ## Security testing
 
@@ -76,10 +76,10 @@ kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny cl
 
 Rule: daily puzzle, stats, streak display and global stats stay free for everyone. Paid = extras only.
 
-- [x] Supporter tier entitlement core (price still TBD, rough idea ~$2/month or ~$15/year). _Built: migration `0004_supporters.sql` (not applied to live), webhook `app/api/razorpay/webhook/route.ts` (HMAC-verified, fail-closed, service role upsert), subscribe stub `app/api/razorpay/subscribe/route.ts`, client hook `lib/useSupporter.ts` (`useSupporter()` → `{isSupporter, loading}`). Provider: Razorpay (untested live)._
-- [x] Streak freeze: 1 per calendar month, auto-used for a single missed day, no stacking. _Built (not applied live): migration `0006_streak_freezes.sql` (RLS: active supporter, one per month), pure `lib/streak.ts`, client sync in `StatsModal`, self-check `node scripts/streak-check.mjs`. Signed-out and non-supporter streaks unchanged._
-- [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `components/Leagues.tsx`, gated by `useSupporter` (real `lib/useSupporter.ts`)._
-- [x] Cosmetics: themes and badges, no gameplay effect. _Code: `lib/themes.ts` (3 Supporter themes + free default, `data-theme` on `<html>`, localStorage `opq-theme`), `components/ThemePicker.tsx` in Account dialog, Supporter badge there, CSS in `app/globals.css`. Picker lives in Account, so only reachable when Supabase is configured. Not browser-tested._
+- [x] Supporter tier entitlement core (price still TBD, rough idea ~$2/month or ~$15/year). _Built: migration `0004_supporters.sql` (not applied to live), webhook `app/api/razorpay/webhook/route.ts` (HMAC-verified, fail-closed, service role upsert), subscribe stub `app/api/razorpay/subscribe/route.ts`, client hook `platform/useSupporter.ts` (`useSupporter()` → `{isSupporter, loading}`). Provider: Razorpay (untested live)._
+- [x] Streak freeze: 1 per calendar month, auto-used for a single missed day, no stacking. _Built (not applied live): migration `0006_streak_freezes.sql` (RLS: active supporter, one per month), pure `games/op-quiz/streak.ts`, client sync in `StatsModal`, self-check `node scripts/streak-check.mjs`. Signed-out and non-supporter streaks unchanged._
+- [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `games/op-quiz/Leagues.tsx`, gated by `useSupporter` (real `platform/useSupporter.ts`)._
+- [x] Cosmetics: themes and badges, no gameplay effect. _Code: `platform/themes.ts` (3 Supporter themes + free default, `data-theme` on `<html>`, localStorage `opq-theme`), `platform/ThemePicker.tsx` in Account dialog, Supporter badge there, CSS in `app/globals.css`. Picker lives in Account, so only reachable when Supabase is configured. Not browser-tested._
 - [x] Archive of past dailies becomes **paid**: go back to older days and play them. _Built: `OpQuizGame.tsx` shows `ArchiveLocked` (upgrade prompt) unless `useSupporter().isSupporter`; supporters get the unchanged archive. Archive runs still do not save to `opq-v1` or count toward stats/streak._
 - [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
 - Never paywall: daily puzzle, stats, sharing. Audio stays iTunes previews only (no rehosting).
@@ -98,19 +98,22 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
 
 - [ ] Homepage SSRs an empty body (`OpQuizGame.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
-- [ ] Add `app/robots.ts` and `app/sitemap.ts` (`/`, `/privacy`, `/terms`); both 404 today.
-- [ ] Add `metadataBase` + canonical in `layout.tsx` (use `hibidle.com`).
+- [x] `app/robots.ts` and `app/sitemap.ts` exist (sitemap: `/`, `/op-quiz`, `/privacy`, `/terms`).
+- [x] `metadataBase` in `app/layout.tsx` (from `platform/site.ts`, still the vercel.app URL until hibidle.com is live); game canonical `/op-quiz` in `app/op-quiz/layout.tsx`.
 - [ ] Domain `hibidle.com`: buy, then attach in Vercel (Razorpay hold lifted 2026-11-20: verification withdrawn, restarts later on hibidle.com), 301 the `*.vercel.app` host, add to Search Console. See `docs/domain-setup.md`.
-- [ ] Retitle/description around "anime opening quiz"; add `WebSite` + `VideoGame` JSON-LD.
+- [x] Game title/description around "anime opening quiz" + `VideoGame` JSON-LD in `app/op-quiz/layout.tsx`; hub `WebSite` JSON-LD in `app/layout.tsx`. Share image per route (`app/opengraph-image.tsx` hub, `app/op-quiz/opengraph-image.tsx` game).
 - [ ] Later: archive pages (no answers in HTML), backlinks (r/anime, Product Hunt), optional `llms.txt`.
 
-## Game hub (decided 2026-11-20, not started)
+## Game hub (decided 2026-11-20; P1 live 2026-11-20)
 
-All browser games go into one hub: one Next.js app, each game on its own route, one shared account. Hub plan and open questions: `../CLAUDE.md`. Sister game: `../anime-krillion` (Skidmark).
+All browser games go into one hub, **Hibidle**: one Next.js app (this repo), each game on its own route, one shared account. Plan and phases: `../HUB-PLAN.md`. Sister game: `../anime-krillion` (Skidmark).
 
-- [ ] Decide if this repo becomes the hub (likely) and move OP Quiz under its own route (e.g. `/op-quiz`), with a hub home page at `/`. Redirect old links.
-- [ ] Shared Supabase: likely this project. `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table. Write as a new migration; never edit applied ones.
-- [ ] Split shared code (auth/Account dialog, stats modal, share, countdown, Supporter, themes) from OP Quiz-only code.
+- [x] This repo is the hub. The game moved to `/op-quiz` (`app/op-quiz/`, code in `games/op-quiz/`); hub home at `/` (`app/(hub)/`). Old `/?mode|era|type` links 307 to `/op-quiz` (`next.config.ts`). Merged to `main` and live 2026-11-20.
+- [x] Shared code split: `platform/` (auth/sync `cloud.ts`, Supporter, themes, Turnstile, `hub.tsx` with `useHub()`); game-only code in `games/op-quiz/`. `games/registry.ts` lists games and real playable modes.
+- [x] Hub UI: left rail (bottom bar on phones), Home, Charts, Friends, Chat, Me; pixel scenes, thumbnails, avatars and icons drawn in code (`components/hub/`). Friends, chat messages and leaderboards are **demo data** (labelled) until P4/P5; achievements are "Soon" (not tracked).
+- [x] Sign-in from any page returns the player there (`hibidle-return` in localStorage), since Supabase redirects land on the site root.
+- [ ] Shared Supabase: `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table (HUB-PLAN P2). Write as a new migration; never edit applied ones.
+- [ ] Profiles, friends, friend chat (HUB-PLAN P3 to P5), then Skidmark (P6).
 - [ ] Hub-wide or per-game Supporter tier.
 - [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet; .com only for now). `kikoe.io` will not be bought; kikoe stays this game's name. Hold lifted 2026-11-20: Razorpay verification of the current Vercel URL was withdrawn, so the live domain and Razorpay website entry can move to hibidle.com (verification restarts there).
 
