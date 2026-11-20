@@ -56,9 +56,10 @@ export function Me() {
     setBusy(false);
   };
   const needCaptcha = !!turnstileSiteKey && !captcha;
+  const wins = s && s.played ? Math.round((s.wins / s.played) * 100) : 0;
   const stats: [string, string, IconName][] = [
     ["Played", String(s?.played ?? 0), "play"],
-    ["Win %", s && s.played ? `${Math.round((s.wins / s.played) * 100)}%` : "0%", "charts"],
+    ["Win %", `${wins}%`, "charts"],
     ["Streak", String(s?.streak ?? 0), "flame"],
     ["Best", String(s?.best ?? 0), "clock"],
   ];
@@ -70,18 +71,19 @@ export function Me() {
         <div className="h-banner"><PixelCanvas scene="dusk" px={4} /></div>
         <div className="h-profbody">
           <span className="h-pframe"><Avatar seed={user?.id ?? "guest"} size={112} /></span>
-          <div>
+          <div className="h-plate">
             <h1>{name}{isSupporter && <span className="h-sup">Supporter</span>}</h1>
             <p className="h-note">{user ? user.email : "Not signed in"}</p>
+            {!user && <a href="#account" className="h-btn sm h-sign">Sign in</a>}
           </div>
         </div>
       </section>
       <section className="h-sec">
         <h2 className="h-h2">kikoe</h2>
-        <div className="h-stats">{stats.map(([l, v, ic]) => <div key={l} className="h-stat"><PIcon name={ic} size={18} /><span className="h-lab">{l}</span>{/^0%?$/.test(v) ? <><b className="zero">--</b><small>Play to start</small></> : <b>{v}</b>}</div>)}</div>
+        <div className="h-stats">{stats.map(([l, v, ic]) => <div key={l} className="h-stat"><PIcon name={ic} size={18} /><span className="h-lab">{l}</span><b>{v}</b>{l === "Win %" && <span className="h-bar"><i style={{ width: `${wins}%` }} /></span>}{/^0%?$/.test(v) && <small>Play today to start</small>}</div>)}</div>
       </section>
       <section className="h-sec">
-        <h2 className="h-h2">Account</h2>
+        <h2 className="h-h2" id="account">Account</h2>
         <div className="h-acctgrid">
         <div className="h-panel h-acct">
           {user ? (
