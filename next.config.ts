@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  devIndicators: false,
   // Old OP Quiz deep links (/?mode=..) now live at /op-quiz. Query passes through. Never match auth params (code, error, ...).
   async redirects() {
     return ["mode", "era", "type"].map((key) => ({

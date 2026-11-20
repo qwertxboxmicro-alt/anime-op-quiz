@@ -1,0 +1,123 @@
+/* Hibidle hub. Everything is scoped under .hub so the game routes keep their own look (app/globals.css). */
+.hub {
+  --bg: #0b1420; --rail: #070e17; --panel: #12203a; --panel2: #192b48; --line: #26395c; --text: #eef4fb; --dim: #8fa3bf; --soft: #c4d2e4;
+  --pink: #ff4f7b; --pink-d: #c4345a; --cyan: #4fe3f0; --amber: #ffd24a; --green: #7cc35a;
+  --notch: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px));
+  --scan: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px);
+  min-height: 100dvh; background: var(--bg); color: var(--text);
+  display: grid; grid-template-columns: 84px minmax(0, 1fr);
+}
+.hub a { text-decoration: none; }
+.hub :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.h-lab { font-family: var(--f-label), monospace; font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+
+/* ---------- Rail ---------- */
+.h-rail { position: sticky; top: 0; height: 100dvh; background: var(--rail); border-right: 2px solid #ffffff0a; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; z-index: 30; }
+.h-mark { width: 44px; height: 44px; margin-bottom: 14px; display: grid; place-items: center; background: var(--pink); clip-path: var(--notch); box-shadow: inset 0 -4px 0 var(--pink-d); }
+.h-mark span { font-family: var(--f-display), sans-serif; font-weight: 700; font-size: 1.5rem; color: #fff; line-height: 1; margin-top: -3px; text-shadow: 2px 2px 0 var(--pink-d); }
+.h-nav { width: 68px; padding: 9px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--dim); font-size: .6875rem; font-weight: 600; clip-path: var(--notch); transition: color .15s, background-color .15s; }
+.h-nav:hover { color: var(--text); background: #ffffff0a; }
+.h-nav[aria-current="page"] { color: var(--text); background: var(--panel); }
+.h-nav[aria-current="page"] svg { color: var(--cyan); }
+
+/* ---------- Top bar ---------- */
+.h-main { min-width: 0; padding: 0 40px 64px; }
+.h-top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; padding: 14px 0; background: linear-gradient(var(--bg) 70%, transparent); }
+.h-search { flex: 0 1 460px; margin: 0 auto; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; background: var(--panel); clip-path: var(--notch); color: var(--dim); }
+.h-search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: var(--text); font-size: .875rem; }
+.h-search input::placeholder { color: var(--dim); }
+.h-search:focus-within { box-shadow: inset 0 0 0 2px var(--cyan); }
+.h-top-r { display: flex; align-items: center; gap: 10px; }
+.h-iconbtn { width: 40px; height: 40px; display: grid; place-items: center; color: var(--soft); background: var(--panel); clip-path: var(--notch); }
+.h-iconbtn:hover { color: var(--text); background: var(--panel2); }
+.h-me { display: flex; align-items: center; gap: 10px; padding: 3px 14px 3px 3px; background: var(--panel); clip-path: var(--notch); color: var(--text); font-weight: 600; font-size: .875rem; }
+.h-me:hover { background: var(--panel2); }
+.h-av { display: block; clip-path: var(--notch); }
+
+/* ---------- Hero ---------- */
+.h-page { max-width: 1360px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+.h-hero { position: relative; height: clamp(300px, 34vw, 420px); clip-path: var(--notch); overflow: hidden; display: grid; place-items: center; background: #8cc6ea; }
+.h-hero-bg { position: absolute; inset: 0; }
+.h-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 38% 55% at 50% 52%, #0b142033 0%, transparent 70%); }
+.h-hero-c { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.h-title { font-family: var(--f-display), sans-serif; font-weight: 700; font-size: clamp(3rem, 7vw, 5.5rem); line-height: .95; letter-spacing: .04em; text-transform: uppercase; color: #fff8ef;
+  text-shadow: 0 4px 0 #ff4f7b, 4px 4px 0 #ff4f7b, 4px 8px 0 #1b2a44, 8px 8px 0 #1b2a44; }
+.h-sub { padding: 5px 12px; background: #0b1420cc; color: #dbe7f5; clip-path: var(--notch); }
+.h-modes { display: flex; gap: 6px; margin-top: 6px; }
+.h-mode { font-family: var(--f-label), monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; padding: 9px 18px; background: #0f1b2fe6; color: var(--soft); clip-path: var(--notch); box-shadow: inset 0 -3px 0 #00000055; }
+.h-mode.on { background: var(--cyan); color: #06222a; box-shadow: inset 0 -3px 0 #2aa9b5; }
+.h-mode:hover:not(.on) { color: #fff; background: #172a47; }
+.h-cta { display: inline-flex; align-items: center; gap: 12px; padding: 16px 42px 19px; min-width: 340px; justify-content: center; background: var(--pink); color: #fff; clip-path: var(--notch);
+  font-family: var(--f-label), monospace; font-weight: 700; font-size: 1rem; letter-spacing: .16em; text-transform: uppercase; box-shadow: inset 0 -5px 0 var(--pink-d), inset 0 2px 0 #ff8aa8; transition: transform .1s, filter .15s; }
+.h-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.h-cta:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 var(--pink-d); }
+.h-hud { position: absolute; top: 18px; z-index: 1; padding: 8px 16px 9px; min-width: 132px; background: #0d182bee; background-image: var(--scan); clip-path: var(--notch); display: flex; flex-direction: column; gap: 2px; }
+.h-hud-l { left: 18px; }
+.h-hud-r { right: 18px; text-align: right; align-items: flex-end; }
+.h-hud .h-lab { font-size: .5625rem; }
+.h-hudv { font-family: var(--f-display), sans-serif; font-weight: 500; font-size: 1.5rem; line-height: 1.1; display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.cyan { color: var(--cyan); } .pink { color: var(--pink); }
+
+/* ---------- Sections ---------- */
+.h-sec { display: flex; flex-direction: column; gap: 14px; }
+.h-sec-h { display: flex; align-items: center; gap: 10px; }
+.h-h2 { display: inline-flex; align-items: center; gap: 6px; font-size: 1.375rem; font-weight: 700; color: var(--text); }
+a.h-h2:hover { color: var(--cyan); }
+.h-chip { font-family: var(--f-label), monospace; font-size: .5625rem; letter-spacing: .12em; text-transform: uppercase; padding: 3px 8px; background: #ffd24a1f; color: var(--amber); clip-path: var(--notch); }
+.h-empty { color: var(--dim); }
+
+/* Friends row */
+.h-friends { list-style: none; padding: 0 0 6px; display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
+.h-friend { width: 96px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text); text-align: center; }
+.h-friend b { font-size: .8125rem; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-friend small { font-size: .75rem; color: var(--dim); }
+.h-fav { position: relative; width: 84px; height: 84px; display: grid; place-items: center; background: var(--panel); clip-path: var(--notch); margin-bottom: 4px; }
+.h-fav svg { display: block; }
+.h-fav.online, .h-fav.playing { background: var(--green); }
+.h-fav.playing { background: var(--cyan); }
+.h-add { color: var(--soft); background: var(--panel2); }
+.h-friend:hover .h-add { color: var(--text); background: var(--line); }
+.h-friend:hover .h-fav { filter: brightness(1.08); }
+.h-playing { position: absolute; right: 6px; bottom: 6px; width: 22px; height: 22px; display: grid; place-items: center; background: #0d182b; color: var(--cyan); clip-path: var(--notch); }
+
+/* Game tiles */
+.h-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px 18px; }
+.h-tile { display: flex; flex-direction: column; gap: 4px; color: var(--text); }
+.h-thumb { position: relative; aspect-ratio: 16 / 9; clip-path: var(--notch); overflow: hidden; margin-bottom: 6px; background: var(--panel); }
+.h-thumb-t { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-family: var(--f-display), sans-serif; font-weight: 700; font-size: 1.75rem; letter-spacing: .04em; text-transform: uppercase; color: #fff8ef; text-shadow: 3px 3px 0 #1b1730, -1px -1px 0 #1b1730, 1px -1px 0 #1b1730, -1px 1px 0 #1b1730; }
+.h-badge { position: absolute; top: 8px; left: 8px; font-family: var(--f-label), monospace; font-size: .5625rem; letter-spacing: .12em; text-transform: uppercase; padding: 4px 8px; clip-path: var(--notch); }
+.h-badge.live { background: var(--pink); color: #fff; }
+.h-badge.soon { background: #0d182bdd; color: var(--amber); }
+.h-tname { font-size: 1rem; font-weight: 700; }
+.h-tmeta { font-size: .8125rem; color: var(--dim); }
+.h-tile:hover .h-thumb { transform: translateY(-3px); }
+.h-thumb { transition: transform .15s; }
+.h-tile.soon { cursor: default; }
+.h-tile.soon .h-thumb canvas { filter: saturate(.75) brightness(.85); }
+
+/* ---------- Phone: rail becomes a bottom tab bar ---------- */
+@media (max-width: 760px) {
+  .hub { grid-template-columns: minmax(0, 1fr); }
+  .h-rail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: 64px; flex-direction: row; justify-content: space-around; padding: 4px 6px calc(4px + env(safe-area-inset-bottom)); border-right: 0; border-top: 2px solid #ffffff0a; }
+  .h-mark { display: none; }
+  .h-nav { width: auto; flex: 1; }
+  .h-main { padding: 0 16px 88px; }
+  .h-top { gap: 8px; }
+  .h-search { flex: 1; }
+  .h-me span, .h-iconbtn { display: none; }
+  .h-me { padding: 3px; }
+  .h-page { gap: 28px; }
+  .h-hero { height: 360px; }
+  .h-hud { top: 10px; min-width: 0; padding: 6px 10px; }
+  .h-hud-l { left: 10px; } .h-hud-r { right: 10px; }
+  .h-hudv { font-size: 1.125rem; }
+  .h-hero-c { margin-top: 48px; }
+  .h-cta { min-width: 0; padding: 14px 24px 17px; font-size: .875rem; }
+  .h-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
+  .h-thumb-t { font-size: 1.125rem; }
+  .h-friends { gap: 12px; }
+  .h-friend { width: 76px; }
+  .h-fav { width: 68px; height: 68px; }
+  .h-fav svg { width: 58px; height: 58px; }
+}
+@media (prefers-reduced-motion: reduce) { .hub * { transition: none !important; } }
