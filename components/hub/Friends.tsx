@@ -30,7 +30,7 @@ export function Friends() {
         <ul className="h-fgrid">
           {list.map((f) => (
             <li key={f.name} className="h-fcard">
-              <span className={`h-fframe ${f.status}`}><Avatar seed={f.name} size={64} /></span>
+              <span className={`h-fframe ${f.status}`}><Avatar seed={f.name} size={64} />{f.status !== "offline" && <span className={`h-dot ${f.status}`} />}</span>
               <b>{f.name}</b>
               <small>{f.status === "playing" ? `In ${f.game}` : f.status === "online" ? "Online" : "Offline"}</small>
               <span className="h-acts">

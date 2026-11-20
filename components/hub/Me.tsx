@@ -3,13 +3,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useHub } from "@/platform/hub";
 import { deleteAccount, sendLink, signInWith, signOut, type Provider } from "@/platform/cloud";
-import { readStats, type Stats } from "@/games/op-quiz/stats";
+import { readDays, readStats, type DayLog, type Stats } from "@/games/op-quiz/stats";
 import { Turnstile, turnstileSiteKey } from "@/platform/Turnstile";
-import { Avatar } from "./Sprites";
+import { PixelCanvas } from "./PixelCanvas";
+import { Avatar, PIcon, type IconName } from "./Sprites";
 
 export function Me() {
   const { user, name, isSupporter } = useHub();
   const [s, setS] = useState<Stats | null>(null);
+  const [days, setDays] = useState<DayLog>({});
+  const [today, setToday] = useState(0); // set after mount: Date.now() must not run during prerender
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -17,7 +20,7 @@ export function Me() {
   const [deleting, setDeleting] = useState(false);
   const [captcha, setCaptcha] = useState<string | null>(null);
   const [widget, setWidget] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setS(readStats()), 0); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => { setS(readStats()); setDays(readDays()); setToday(Math.floor(Date.now() / 864e5)); }, 0); return () => clearTimeout(t); }, []);
   const remove = async () => {
     setBusy(true);
     const err = await deleteAccount();
@@ -40,27 +43,33 @@ export function Me() {
     setBusy(false);
   };
   const needCaptcha = !!turnstileSiteKey && !captcha;
-  const stats: [string, string][] = [
-    ["Played", String(s?.played ?? 0)],
-    ["Win %", s && s.played ? `${Math.round((s.wins / s.played) * 100)}%` : "0%"],
-    ["Streak", String(s?.streak ?? 0)],
-    ["Best", String(s?.best ?? 0)],
+  const stats: [string, string, IconName][] = [
+    ["Played", String(s?.played ?? 0), "play"],
+    ["Win %", s && s.played ? `${Math.round((s.wins / s.played) * 100)}%` : "0%", "charts"],
+    ["Streak", String(s?.streak ?? 0), "flame"],
+    ["Best", String(s?.best ?? 0), "clock"],
   ];
+  const last14 = Array.from({ length: 14 }, (_, i) => today - 13 + i);
+  const hasDays = today > 0 && Object.keys(days).length > 0;
   return (
     <main className="h-page">
       <section className="h-panel h-prof">
-        <span className="h-pframe"><Avatar seed={user?.id ?? "guest"} size={112} /></span>
-        <div>
-          <h1>{name}{isSupporter && <span className="h-sup">Supporter</span>}</h1>
-          <p className="h-note">{user ? user.email : "Not signed in"}</p>
+        <div className="h-banner"><PixelCanvas scene="dusk" px={4} /></div>
+        <div className="h-profbody">
+          <span className="h-pframe"><Avatar seed={user?.id ?? "guest"} size={112} /></span>
+          <div>
+            <h1>{name}{isSupporter && <span className="h-sup">Supporter</span>}</h1>
+            <p className="h-note">{user ? user.email : "Not signed in"}</p>
+          </div>
         </div>
       </section>
       <section className="h-sec">
         <h2 className="h-h2">kikoe</h2>
-        <div className="h-stats">{stats.map(([l, v]) => <div key={l} className="h-stat"><span className="h-lab">{l}</span><b>{v}</b></div>)}</div>
+        <div className="h-stats">{stats.map(([l, v, ic]) => <div key={l} className="h-stat"><PIcon name={ic} size={18} /><span className="h-lab">{l}</span><b>{v}</b></div>)}</div>
       </section>
       <section className="h-sec">
         <h2 className="h-h2">Account</h2>
+        <div className="h-acctgrid">
         <div className="h-panel h-acct">
           {user ? (
             <>
@@ -80,8 +89,8 @@ export function Me() {
           ) : (
             <>
               <p className="h-note">Sign in to keep your stats across devices.</p>
-              <button className="h-btn alt" disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
-              <button className="h-btn alt" disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
               <p className="h-note">Or use a one-time email link. No password.</p>
               <input className="h-input" type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
                 onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
@@ -90,6 +99,21 @@ export function Me() {
               {msg && <p className="h-note" role="status">{msg}</p>}
             </>
           )}
+        </div>
+        <div className="h-panel h-acct">
+          <span className="h-lab">kikoe history · last 14 days</span>
+          {hasDays ? (
+            <>
+              <div className="h-days">
+                {last14.map((d) => {
+                  const r = days[d];
+                  return <span key={d} className={`h-day${r ? (r.won ? " w" : " l") : ""}`} title={`Day ${d}`}>{r?.won ? r.tries : ""}</span>;
+                })}
+              </div>
+              <div className="h-legend"><span><i className="w" />Won (tries)</span><span><i className="l" />Lost</span><span><i />Not played</span></div>
+            </>
+          ) : <p className="h-note">No daily games yet. Play today&apos;s kikoe and your history shows up here.</p>}
+        </div>
         </div>
       </section>
       <p className="h-links"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></p>

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { GAMES, type GameEntry } from "@/games/registry";
+import { GAMES, MODES } from "@/games/registry";
+import type { SceneId } from "./scenes";
 import { PixelCanvas } from "./PixelCanvas";
 import { Avatar, PIcon } from "./Sprites";
 
@@ -9,24 +10,34 @@ import { Avatar, PIcon } from "./Sprites";
 const STREAKS = [["mochi_beats", "41 days"], ["lofi_ren", "33 days"], ["Tsubasa", "28 days"], ["kaito.exe", "19 days"], ["Hana", "14 days"], ["Sorairo", "11 days"]];
 const FAST = [["kaito.exe", "0.3 s"], ["Tsubasa", "0.4 s"], ["mochi_beats", "0.6 s"], ["pixelnami", "0.8 s"], ["Juniper", "1.1 s"], ["lofi_ren", "1.4 s"]];
 
-function Tile({ g }: { g: GameEntry }) {
+type Kind = "daily" | "endless" | "era" | "soon";
+type Item = { key: string; name: string; meta: string; href?: string; scene: SceneId; variant?: number; kind: Kind };
+const FILTERS = ["All", "Daily", "Endless", "Eras"] as const;
+const KIND: Record<(typeof FILTERS)[number], Kind | null> = { All: null, Daily: "daily", Endless: "endless", Eras: "era" };
+
+const mode = (i: number, kind: Kind): Item => {
+  const m = MODES[i];
+  return { key: m.id, name: m.name, meta: m.meta, href: m.href, scene: "op-quiz", variant: m.variant, kind };
+};
+const kikoe = GAMES.find((g) => g.status === "live")!;
+const SHELVES: { title: string; ranked?: boolean; items: Item[] }[] = [
+  { title: "Play today", ranked: true, items: [mode(0, "daily"), mode(1, "endless"), { key: kikoe.id, name: kikoe.name, meta: kikoe.genre + " · Daily", href: kikoe.route, scene: kikoe.thumb, kind: "daily" }] },
+  { title: "By era", items: [2, 3, 4, 5, 6].map((i) => mode(i, "era")) },
+  { title: "Coming soon", items: GAMES.filter((g) => g.status === "soon").map((g) => ({ key: g.id, name: g.name, meta: g.genre + " · Soon", scene: g.thumb, kind: "soon" as Kind })) },
+];
+
+function Tile({ it, rank }: { it: Item; rank?: number }) {
   const body = (
     <>
-      <span className="h-pthumb"><PixelCanvas scene={g.thumb} px={3} /></span>
-      <b>{g.name}</b>
-      <small>{g.genre} · {g.status === "live" ? "Daily" : "Soon"}</small>
+      <span className="h-pthumb">
+        {rank && <span className="h-rankb">{rank}</span>}
+        <PixelCanvas scene={it.scene} variant={it.variant} px={3} />
+      </span>
+      <b>{it.name}</b>
+      <small>{it.meta}</small>
     </>
   );
-  return g.status === "live" ? <Link href={g.route} className="h-ptile">{body}</Link> : <div className="h-ptile soon">{body}</div>;
-}
-
-function Sec({ title, status }: { title: string; status: GameEntry["status"] }) {
-  return (
-    <section className="h-sec">
-      <div className="h-sec-h"><h2 className="h-h2">{title} <PIcon name="chev" size={16} /></h2></div>
-      <ul className="h-row">{GAMES.filter((g) => g.status === status).map((g) => <li key={g.id}><Tile g={g} /></li>)}</ul>
-    </section>
-  );
+  return it.href ? <Link href={it.href} className="h-ptile">{body}</Link> : <div className="h-ptile soon">{body}</div>;
 }
 
 function Board({ title, rows }: { title: string; rows: string[][] }) {
@@ -45,16 +56,26 @@ function Board({ title, rows }: { title: string; rows: string[][] }) {
 }
 
 export function Charts() {
-  const [f, setF] = useState<"all" | "today">("all");
+  const [f, setF] = useState<(typeof FILTERS)[number]>("All");
+  const k = KIND[f];
   return (
     <main className="h-page">
       <h1 className="h-ptitle">Charts</h1>
       <div className="h-chips" role="group" aria-label="Filter">
-        <button className="h-fchip" aria-pressed={f === "all"} onClick={() => setF("all")}>All games</button>
-        <button className="h-fchip" aria-pressed={f === "today"} onClick={() => setF("today")}>Today</button>
+        {FILTERS.map((x) => <button key={x} className="h-fchip" aria-pressed={f === x} onClick={() => setF(x)}>{x}</button>)}
       </div>
-      <Sec title="Top today" status="live" />
-      {f === "all" && <Sec title="Coming soon" status="soon" />}
+      {SHELVES.map((s) => {
+        const items = s.items.filter((i) => !k || i.kind === k);
+        return items.length ? (
+          <section className="h-sec" key={s.title}>
+            <div className="h-sec-h">
+              <h2 className="h-h2">{s.title} <PIcon name="chev" size={16} /></h2>
+              <Link href="/" className="h-all">See all</Link>
+            </div>
+            <ul className="h-row">{items.map((it, i) => <li key={it.key}><Tile it={it} rank={s.ranked ? i + 1 : undefined} /></li>)}</ul>
+          </section>
+        ) : null;
+      })}
       <div className="h-boards">
         <Board title="Longest streaks" rows={STREAKS} />
         <Board title="Fastest solves today" rows={FAST} />

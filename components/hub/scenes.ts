@@ -153,7 +153,7 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
     let r = dark, g = dark, b = dark;
     if (mood === "dusk") {
       const k = y / h;
-      r *= 0.62 + k * 0.5; g *= 0.42 + k * 0.28; b *= 0.72 - k * 0.22;
+      r *= 0.7 + k * 0.22; g *= 0.5 + k * 0.14; b *= 0.82 + k * 0.05;
       if (y < hz) { r += 0.12; b += 0.08; }
     }
     mul[i] = r; mul[i + 1] = g; mul[i + 2] = b;
