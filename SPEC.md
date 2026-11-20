@@ -100,7 +100,7 @@ Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
 - [ ] Homepage SSRs an empty body (`OpQuizGame.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
 - [ ] Add `app/robots.ts` and `app/sitemap.ts` (`/`, `/privacy`, `/terms`); both 404 today.
 - [ ] Add `metadataBase` + canonical in `layout.tsx` (use `hibidle.com`).
-- [ ] Domain `hibidle.com`: buy, then (only after Razorpay approval) attach in Vercel, 301 the `*.vercel.app` host, add to Search Console. See `docs/domain-setup.md`.
+- [ ] Domain `hibidle.com`: buy, then attach in Vercel (Razorpay hold lifted 2026-11-20: verification withdrawn, restarts later on hibidle.com), 301 the `*.vercel.app` host, add to Search Console. See `docs/domain-setup.md`.
 - [ ] Retitle/description around "anime opening quiz"; add `WebSite` + `VideoGame` JSON-LD.
 - [ ] Later: archive pages (no answers in HTML), backlinks (r/anime, Product Hunt), optional `llms.txt`.
 
@@ -112,7 +112,7 @@ All browser games go into one hub: one Next.js app, each game on its own route, 
 - [ ] Shared Supabase: likely this project. `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table. Write as a new migration; never edit applied ones.
 - [ ] Split shared code (auth/Account dialog, stats modal, share, countdown, Supporter, themes) from OP Quiz-only code.
 - [ ] Hub-wide or per-game Supporter tier.
-- [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet; .com only for now). `kikoe.io` will not be bought; kikoe stays this game's name. Do not switch the live domain or Razorpay website entry until Razorpay verification of the current Vercel URL is done.
+- [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet; .com only for now). `kikoe.io` will not be bought; kikoe stays this game's name. Hold lifted 2026-11-20: Razorpay verification of the current Vercel URL was withdrawn, so the live domain and Razorpay website entry can move to hibidle.com (verification restarts there).
 
 ## Open questions
 

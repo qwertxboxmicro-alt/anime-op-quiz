@@ -1,6 +1,6 @@
 # hibidle.com domain setup (run AFTER buying the domain)
 
-**Hold (decided 2026-11-20):** do not run any step here until Razorpay has approved the current site `https://anime-op-quiz-alpha.vercel.app`. Changing the live domain or the Razorpay website during review can restart it.
+**Hold lifted (2026-11-20):** the Razorpay verification of `https://anime-op-quiz-alpha.vercel.app` was withdrawn, so these steps can run once the domain is bought. Razorpay verification restarts later on hibidle.com; re-add a hold while that review is in progress.
 
 The domain is the game hub's, `hibidle.com` (see `../../CLAUDE.md`). `kikoe.io` will not be bought; kikoe stays only the OP Quiz game name.
 
@@ -10,7 +10,7 @@ Status 2026-11-20: `hibidle.com` returned HTTP 404 from Verisign RDAP (unregiste
 
 ## 1. Vercel: add the domain
 
-1. Vercel dashboard > project `anime-op-quiz` > Settings > Domains.
+1. Vercel dashboard > project `hibidle` (was `anime-op-quiz`) > Settings > Domains.
 2. Add `hibidle.com` and `www.hibidle.com`.
 3. Set `www.hibidle.com` to redirect to `hibidle.com` (or the reverse; pick one and keep it).
 4. Vercel shows the DNS records for each. Copy the exact values it displays (do not guess). At the registrar/DNS host, add them. Wait for Vercel to show "Valid Configuration" and for HTTPS to issue.
@@ -30,7 +30,7 @@ Project ref `meqpyffiuqylljsxupfh`. Dashboard > Authentication > URL Configurati
 2. Hostnames: add `hibidle.com` and `www.hibidle.com`. Keep `anime-op-quiz-alpha.vercel.app` until cut-over is done.
 3. The site key is `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (`components/Turnstile.tsx:6`). It does not change, but `NEXT_PUBLIC_` values bake in at build: redeploy after any env change.
 
-## 4. Razorpay (only after Razorpay approval of the current site)
+## 4. Razorpay (verification withdrawn 2026-11-20; restarts later on hibidle.com)
 
 1. Razorpay dashboard > Account/Website settings: update the website/domain entry to `https://hibidle.com`.
 2. Webhooks: set the URL to `https://hibidle.com/api/razorpay/webhook` (route: `app/api/razorpay/webhook/route.ts`). Keep the existing webhook secret; do not paste it into the repo.
