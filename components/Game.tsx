@@ -80,6 +80,7 @@ export default function Game() {
   };
   const [endless, setEndless] = useState<Opening | null>(null);
   const [modal, setModal] = useState<"how" | "stats" | "account" | "leagues" | null>(null);
+  const [accountHint, setAccountHint] = useState("");
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
   const { isSupporter, loading: supLoading } = useSupporter();
@@ -123,7 +124,7 @@ export default function Game() {
       </nav>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} isSupporter={isSupporter} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
-      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} isSupporter={isSupporter} theme={theme} onPick={setTheme} />}
+      {modal === "account" && <AccountModal user={user} onClose={() => { setModal(null); setAccountHint(""); }} isSupporter={isSupporter} theme={theme} onPick={setTheme} hint={accountHint} />}
       {modal === "leagues" && <Leagues user={user} onClose={() => setModal(null)} />}
       {!daily && arch !== null && isSupporter && (
         <div className="opts">
@@ -174,7 +175,7 @@ export default function Game() {
         </div>
       )}
       {arch !== null && !isSupporter ? (
-        <ArchiveLocked loading={supLoading} />
+        <ArchiveLocked loading={supLoading} onSignIn={() => { setAccountHint("Sign in to become a Supporter."); setModal("account"); }} />
       ) : (
         <Play
           key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
@@ -192,7 +193,7 @@ export default function Game() {
 }
 
 // Archive is a Supporter perk. Daily, stats and sharing stay free.
-function ArchiveLocked({ loading }: { loading: boolean }) {
+function ArchiveLocked({ loading, onSignIn }: { loading: boolean; onSignIn: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   if (loading) return <p className="opts">Checking Supporter status…</p>;
@@ -206,6 +207,7 @@ function ArchiveLocked({ loading }: { loading: boolean }) {
           setBusy(true);
           const r = await startSupporterCheckout();
           if (r.url) window.location.href = r.url;
+          else if (r.needsSignIn) { setBusy(false); onSignIn(); }
           else { setErr(r.error ?? "Could not start subscription."); setBusy(false); }
         }}
       >

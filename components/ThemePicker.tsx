@@ -10,6 +10,7 @@ export function ThemePicker({ isSupporter, theme, onPick }: { isSupporter: boole
   const upgrade = async () => {
     const r = await startSupporterCheckout();
     if (r.url) window.location.href = r.url;
+    else if (r.needsSignIn) setErr("Sign in to become a Supporter.");
     else setErr(r.error ?? "Could not start subscription.");
   };
   return (
