@@ -61,9 +61,11 @@ export function Charts() {
     <main className="h-page">
       <div className="h-strip">
         <PixelCanvas scene="op-quiz" variant={1} px={3} />
+        <div className="h-strip-in">
         <h1 className="h-ptitle">Charts</h1>
         <div className="h-chips" role="group" aria-label="Filter">
           {FILTERS.map((x) => <button key={x} className="h-fchip" aria-pressed={f === x} onClick={() => setF(x)}>{x}</button>)}
+        </div>
         </div>
       </div>
       {SHELVES.map((s) => {
@@ -73,7 +75,7 @@ export function Charts() {
             <div className="h-sec-h">
               <h2 className="h-h2"><PIcon name={s.icon} size={16} /> {s.title}</h2>
             </div>
-            <ul className="h-row">{items.map((it, i) => <li key={it.key}><Tile it={it} rank={s.ranked ? i + 1 : undefined} /></li>)}</ul>
+            <ul className={`h-row${s.ranked ? " feat" : ""}`}>{items.map((it, i) => <li key={it.key}><Tile it={it} rank={s.ranked ? i + 1 : undefined} /></li>)}</ul>
           </section>
         ) : null;
       })}

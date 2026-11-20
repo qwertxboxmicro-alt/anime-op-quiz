@@ -44,9 +44,9 @@
 .h-hero-bg { position: absolute; inset: 0; }
 .h-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 38% 55% at 50% 52%, #0b142033 0%, transparent 70%); }
 .h-hero-c { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left; margin-left: clamp(24px, 6%, 80px); }
-.h-kana { display: flex; align-items: center; gap: 8px; margin: -2px 0 2px 4px; font-family: var(--f-label), monospace; font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: #1b2a44; }
+.h-kana { display: flex; align-items: center; gap: 10px; margin: 0 0 4px 4px; padding: 3px 10px 3px 3px; background: #fff8efd9; clip-path: var(--notch-s); font-family: var(--f-label), monospace; font-weight: 700; font-size: .875rem; letter-spacing: .16em; text-transform: uppercase; color: #1b2a44; }
 .h-kana span { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: 0; font-size: .875rem; padding: 2px 6px; color: #fff; background: var(--pink); clip-path: var(--notch-s); box-shadow: inset 0 -2px 0 var(--pink-d); }
-.h-title { font-family: var(--f-display), sans-serif; font-weight: 700; font-size: clamp(2.75rem, 6.5vw, 5rem); line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: #fff8ef;
+.h-title { font-family: var(--f-display), sans-serif; font-weight: 700; font-size: clamp(2.75rem, 6.5vw, 5rem); line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: #fff8ef; filter: drop-shadow(0 0 18px #fff6d066);
   text-shadow: -2px 0 0 #1b2a44, 2px 0 0 #1b2a44, 0 2px 0 #1b2a44, 0 5px 0 #ff4f7b, 4px 5px 0 #ff4f7b, 4px 9px 0 #1b2a44, 8px 9px 0 #1b2a44; }
 .h-sub { padding: 5px 12px; background: #0b1420cc; color: #dbe7f5; clip-path: var(--notch); }
 .h-plate { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 14px 14px; background: #0b1420b3; clip-path: var(--notch); box-shadow: inset 0 0 0 2px #4fe3f04d, inset 0 -5px 0 #00000059; }

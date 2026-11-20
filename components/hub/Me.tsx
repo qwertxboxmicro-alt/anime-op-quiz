@@ -21,6 +21,9 @@ const BADGES: [string, R[]][] = [
   ["Night owl", [...frame, [9, 6, 6, 2, L], [8, 8, 8, 6, L], [9, 10, 2, 2, G], [13, 10, 2, 2, G], [11, 12, 2, 2, D], [9, 14, 6, 3, L]]],
 ];
 
+const GoogleMark = () => <svg width="16" height="16" viewBox="0 0 4 4" shapeRendering="crispEdges" aria-hidden><rect width="2" height="2" fill="#ea4335" /><rect x="2" width="2" height="2" fill="#4285f4" /><rect y="2" width="2" height="2" fill="#fbbc05" /><rect x="2" y="2" width="2" height="2" fill="#34a853" /></svg>;
+const DiscordMark = () => <svg width="16" height="16" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden><path fill="#5865f2" d="M1 1h6v1h1v4H7v1H5V6H3v1H1V6H0V2h1z" /><rect x="2" y="3" width="1" height="2" fill="#fff" /><rect x="5" y="3" width="1" height="2" fill="#fff" /></svg>;
+
 export function Me() {
   const { user, name, isSupporter } = useHub();
   const [s, setS] = useState<Stats | null>(null);
@@ -57,11 +60,11 @@ export function Me() {
   };
   const needCaptcha = !!turnstileSiteKey && !captcha;
   const wins = s && s.played ? Math.round((s.wins / s.played) * 100) : 0;
-  const stats: [string, string, IconName][] = [
-    ["Played", String(s?.played ?? 0), "play"],
-    ["Win %", `${wins}%`, "charts"],
-    ["Streak", String(s?.streak ?? 0), "flame"],
-    ["Best", String(s?.best ?? 0), "clock"],
+  const stats: [string, string, IconName, string][] = [
+    ["Played", String(s?.played ?? 0), "play", "#4fe3f0"],
+    ["Win %", `${wins}%`, "charts", "#ff4f7b"],
+    ["Streak", String(s?.streak ?? 0), "flame", "#ffd24a"],
+    ["Best", String(s?.best ?? 0), "clock", "#7cc35a"],
   ];
   const last14 = Array.from({ length: 14 }, (_, i) => today - 13 + i);
   const hasDays = today > 0 && Object.keys(days).length > 0;
@@ -70,17 +73,20 @@ export function Me() {
       <section className="h-panel h-prof">
         <div className="h-banner"><PixelCanvas scene="dusk" px={4} /></div>
         <div className="h-profbody">
-          <span className="h-pframe"><Avatar seed={user?.id ?? "guest"} size={112} /></span>
           <div className="h-plate">
-            <h1>{name}{isSupporter && <span className="h-sup">Supporter</span>}</h1>
-            <p className="h-note">{user ? user.email : "Not signed in"}</p>
-            {!user && <a href="#account" className="h-btn sm h-sign">Sign in</a>}
+            <span className="h-pframe"><Avatar seed={user?.id ?? "guest"} size={96} /></span>
+            <div className="h-ptext">
+              <h1>{name}{isSupporter && <span className="h-sup">Supporter</span>}</h1>
+              <p className="h-note">{user ? user.email : "Not signed in"}</p>
+              {!user && <a href="#account" className="h-btn sm h-sign">Sign in</a>}
+            </div>
           </div>
         </div>
       </section>
       <section className="h-sec">
         <h2 className="h-h2">kikoe</h2>
-        <div className="h-stats">{stats.map(([l, v, ic]) => <div key={l} className="h-stat"><PIcon name={ic} size={18} /><span className="h-lab">{l}</span><b>{v}</b>{l === "Win %" && <span className="h-bar"><i style={{ width: `${wins}%` }} /></span>}{/^0%?$/.test(v) && <small>Play today to start</small>}</div>)}</div>
+        <div className="h-stats">{stats.map(([l, v, ic, c]) => <div key={l} className="h-stat" style={{ "--ac": c } as React.CSSProperties}><PIcon name={ic} size={18} /><span className="h-lab">{l}</span><b>{v}</b>{l === "Win %" && <span className="h-bar"><i style={{ width: `${wins}%` }} /></span>}</div>)}</div>
+        {!s?.played && <p className="h-note h-nostats">No kikoe games yet. Play today&apos;s puzzle to start your stats. <Link href="/op-quiz" className="h-plink">Play now</Link></p>}
       </section>
       <section className="h-sec">
         <h2 className="h-h2" id="account">Account</h2>
@@ -104,8 +110,8 @@ export function Me() {
           ) : (
             <>
               <p className="h-note">Sign in to keep your stats across devices.</p>
-              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}><i style={{ background: "#ea4335" }} />Continue with Google</button>
-              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}><i style={{ background: "#5865f2" }} />Continue with Discord</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}><GoogleMark />Continue with Google</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}><DiscordMark />Continue with Discord</button>
               <p className="h-note">Or use a one-time email link. No password.</p>
               <input className="h-input" type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
                 onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
@@ -120,7 +126,7 @@ export function Me() {
           <div className="h-days">
             {last14.map((d) => {
               const r = hasDays ? days[d] : undefined;
-              return <span key={d} className={`h-day${r ? (r.won ? " w" : " l") : ""}`} title={`Day ${d}`}>{r?.won ? r.tries : ""}</span>;
+              return <span key={d} className="h-dw"><span className={`h-day${r ? (r.won ? " w" : " l") : ""}`} title={`Day ${d}`}>{r?.won ? r.tries : ""}</span><em>{today > 0 ? "SMTWTFS"[new Date(d * 864e5).getUTCDay()] : ""}</em></span>;
             })}
           </div>
           <div className="h-legend"><span><i className="w" />Won (tries)</span><span><i className="l" />Lost</span><span><i />Not played</span></div>
