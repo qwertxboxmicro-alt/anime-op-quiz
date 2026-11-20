@@ -10,7 +10,7 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
   const back = new Buf(w, h);
   bands(back, 0, 0, w, hz + 4, ["#4f9fd8", "#69b2e2", "#8cc6ea", "#b3daef", "#d7ecf1", "#eef6ec"]);
   // Sun with a dithered halo.
-  const sx = Math.round(w * 0.8), sy = Math.round(h * 0.2), sr = Math.max(3, Math.round(h * 0.06));
+  const sx = Math.round(w * 0.5), sy = Math.round(h * 0.2), sr = Math.max(3, Math.round(h * 0.06));
   for (let y = -sr * 3; y <= sr * 3; y++) for (let x = -sr * 3; x <= sr * 3; x++) {
     const d = Math.sqrt(x * x + y * y) / sr;
     const px = sx + x, py = sy + y;
@@ -86,7 +86,7 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
     }
   }
   // Path: from bottom centre-left up to the windmill hill.
-  const mx = Math.round(w * (w < 160 ? 0.86 : 0.74)); // phones: keep the windmill clear of the title
+  const mx = Math.round(w * (w < 160 ? 0.82 : 0.64)); // title sits left on desktop, centred on phones
   for (let y = h - 1; y > hill[mx] + 2; y--) {
     const k = (h - y) / (h - hill[mx]);
     const cx = Math.round(w * 0.42 + (mx - w * 0.42) * k + Math.sin(k * 5) * w * 0.03);
@@ -101,10 +101,10 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
     else land.set(x, y, fl[Math.floor(r() * fl.length)]);
   }
   // Big oak on the far left, framing.
-  const ox = Math.round(w * 0.05), og = h - 2, ocr = Math.round(h * 0.2);
+  const ox = Math.round(w * 0.95), og = h - 2, ocr = Math.round(h * 0.2);
   for (let y = og - Math.round(h * 0.42); y < og; y++) for (let x = -2; x <= 2; x++) land.set(ox + x, y, c(x === 2 ? "#4a2f1d" : x < 0 ? "#7a5233" : "#62412a"));
   // Canopy: many small leaf clumps around a big mass, each lit from the upper right, so it reads as foliage not a polygon.
-  const crown = { x: ox + Math.round(ocr * 0.15), y: og - Math.round(h * 0.52), rx: ocr * 1.15, ry: h * 0.27 };
+  const crown = { x: ox - Math.round(ocr * 0.15), y: og - Math.round(h * 0.52), rx: ocr * 1.15, ry: h * 0.27 };
   const clumps: [number, number, number][] = [];
   for (let i = 0; i < 60; i++) {
     const a = r() * Math.PI * 2, d = Math.sqrt(r());
@@ -122,14 +122,14 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
     }
   }
   // Branches peeking out under the crown.
-  for (let k = 0; k < 6; k++) land.set(ox + 3 + k, og - Math.round(h * 0.3) - Math.round(k * 0.6), c("#62412a"));
+  for (let k = 0; k < 6; k++) land.set(ox - 3 - k, og - Math.round(h * 0.3) - Math.round(k * 0.6), c("#62412a"));
   // Foreground split-rail fence crossing the lower right, cropped by the frame edge.
   const fy = Math.round(h * 0.88);
-  for (let x = Math.round(w * 0.8); x < w + 2; x++) {
-    const y = fy - Math.round((x - w * 0.8) * 0.12);
+  for (let x = -2; x < Math.round(w * 0.2); x++) {
+    const y = fy - Math.round((w * 0.2 - x) * 0.12);
     land.set(x, y, c("#8a6240")); land.set(x, y + 1, c("#5e4029"));
     land.set(x, y + 4, c("#8a6240")); land.set(x, y + 5, c("#5e4029"));
-    if (Math.round(x - w * 0.8) % 9 === 0) for (let k = -3; k < 9; k++) { land.set(x, y + k, c("#9c7048")); land.set(x + 1, y + k, c("#5e4029")); }
+    if ((x + 2) % 9 === 0) for (let k = -3; k < 9; k++) { land.set(x, y + k, c("#9c7048")); land.set(x + 1, y + k, c("#5e4029")); }
   }
   back.over(land);
   // Windmill body (blades are animated).

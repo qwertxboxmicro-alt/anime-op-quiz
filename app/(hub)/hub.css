@@ -40,16 +40,18 @@
 
 /* ---------- Hero ---------- */
 .h-page { max-width: 1360px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
-.h-hero { position: relative; height: clamp(280px, 25vw, 360px); clip-path: var(--notch); overflow: hidden; display: grid; place-items: center; background: #8cc6ea; }
+.h-hero { position: relative; height: clamp(280px, 25vw, 360px); clip-path: var(--notch); overflow: hidden; display: grid; place-items: center start; background: #8cc6ea; }
 .h-hero-bg { position: absolute; inset: 0; }
 .h-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 38% 55% at 50% 52%, #0b142033 0%, transparent 70%); }
-.h-hero-c { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.h-hero-c { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left; margin-left: clamp(24px, 6%, 80px); }
+.h-kana { display: flex; align-items: center; gap: 8px; margin: -2px 0 2px 4px; font-family: var(--f-label), monospace; font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: #1b2a44; }
+.h-kana span { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: 0; font-size: .875rem; padding: 2px 6px; color: #fff; background: var(--pink); clip-path: var(--notch-s); box-shadow: inset 0 -2px 0 var(--pink-d); }
 .h-title { font-family: var(--f-display), sans-serif; font-weight: 700; font-size: clamp(2.75rem, 6.5vw, 5rem); line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: #fff8ef;
   text-shadow: -2px 0 0 #1b2a44, 2px 0 0 #1b2a44, 0 2px 0 #1b2a44, 0 5px 0 #ff4f7b, 4px 5px 0 #ff4f7b, 4px 9px 0 #1b2a44, 8px 9px 0 #1b2a44; }
 .h-sub { padding: 5px 12px; background: #0b1420cc; color: #dbe7f5; clip-path: var(--notch); }
-.h-plate { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 14px 14px; background: #0b1420b3; clip-path: var(--notch); box-shadow: inset 0 0 0 2px #4fe3f04d, inset 0 -5px 0 #00000059; }
+.h-plate { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 14px 14px; background: #0b1420b3; clip-path: var(--notch); box-shadow: inset 0 0 0 2px #4fe3f04d, inset 0 -5px 0 #00000059; }
 .h-plate .h-sub { background: none; padding: 0 8px; clip-path: none; }
-.h-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.h-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .h-cta2 { display: inline-flex; align-items: center; padding: 16px 26px 19px; background: #0d182bee; background-image: var(--scan); color: var(--soft); clip-path: var(--notch);
   font-family: var(--f-label), monospace; font-weight: 700; font-size: .875rem; letter-spacing: .14em; text-transform: uppercase; box-shadow: inset 0 -5px 0 #00000066, inset 0 1px 0 #4fe3f033; }
 .h-cta2:hover { color: #fff; background-color: #14243e; }
@@ -59,7 +61,7 @@
 .h-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .h-cta:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 var(--pink-d); }
 .h-hud { position: absolute; top: 18px; z-index: 1; padding: 8px 16px 9px; min-width: 132px; background: #0d182bee; background-image: var(--scan); clip-path: var(--notch); display: flex; flex-direction: column; gap: 2px; }
-.h-hud-l { left: 18px; }
+.h-hud-l { right: 178px; }
 .h-hud-r { right: 18px; text-align: right; align-items: flex-end; }
 .h-hud .h-lab { font-size: .6875rem; }
 .h-hudv { font-family: var(--f-display), sans-serif; font-weight: 500; font-size: 1.5rem; line-height: 1.1; display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
@@ -121,7 +123,10 @@ a.h-h2:hover { color: var(--cyan); }
   .h-page { gap: 28px; }
   .h-hero { height: 360px; }
   .h-hud { top: 10px; min-width: 0; padding: 6px 10px; }
-  .h-hud-l { left: 10px; } .h-hud-r { right: 10px; }
+  .h-hud-l { left: 10px; right: auto; } .h-hud-r { right: 10px; }
+  .h-hero { place-items: center; }
+  .h-hero-c { margin-left: 0; align-items: center; text-align: center; }
+  .h-plate { align-items: center; } .h-actions { justify-content: center; }
   .h-hudv { font-size: 1.125rem; }
   .h-hero-c { margin-top: 48px; }
   .h-cta { min-width: 0; padding: 14px 20px 17px; font-size: .8125rem; }

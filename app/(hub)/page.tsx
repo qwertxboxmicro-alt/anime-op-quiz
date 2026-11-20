@@ -12,6 +12,7 @@ export default function HubHome() {
         <HeroHud />
         <div className="h-hero-c">
           <h1 id="hero-t" className="h-title">Hibidle</h1>
+          <p className="h-kana" lang="ja"><span>日々</span> day by day</p>
           <div className="h-plate">
           <p className="h-lab h-sub">Daily games · one account</p>
           <div className="h-actions">
