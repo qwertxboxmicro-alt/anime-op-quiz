@@ -71,6 +71,18 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] Dependency updates + `npm audit` in CI. _`.github/workflows/ci.yml` runs audit (high), lint, build. Dependabot added (`.github/dependabot.yml`, weekly npm + actions, minor/patch grouped)._
 - [x] **Scan run 2026-11-18 against local prod build: 1 LOW finding (public answer bank, accepted, client-side game by design), 0 Critical/High/Medium; fixes none. Remaining: re-scan against a test Supabase project once delete-account key is wired. See `docs/work-log/quiz-strix.md`, `docs/strix-instructions.txt`.** Strix (AI pentest agent): install per its README (needs Docker + an LLM API key), then scan this repo and the deployed staging/preview URL. Only target our own site and our own Supabase test project, never production or third-party services. Triage findings, fix real ones, re-scan, and note results here.
 
+## Supporter tier (paid, planned)
+
+Rule: daily puzzle, stats, streak display and global stats stay free for everyone. Paid = extras only.
+
+- [ ] Supporter tier: price TBD (rough idea ~$2/month or ~$15/year). Entitlement stored per Supabase user (`supporters` table, written only by a payment webhook route using the service role key, never client-side). Payment provider TBD (Stripe; Razorpay if India).
+- [ ] Streak freeze: a missed day doesn't break the streak. Cap and refill rule TBD.
+- [ ] Private friend leagues: create/join by invite code, shared leaderboard + group stats. Needs new tables + RLS (members read only their own league).
+- [ ] Cosmetics: themes and badges, no gameplay effect.
+- [ ] Archive of past dailies becomes **paid**: go back to older days and play them. Today the Archive tab in `Game.tsx` is free and replays `openingFor(day)` without saving to `opq-v1` or stats; gate it behind Supporter. Decide: do archive runs count toward stats/streak (currently no, keep no).
+- [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
+- Never paywall: daily puzzle, stats, sharing. Audio stays iTunes previews only (no rehosting).
+
 ## Later (only once real players show up)
 
 - [x] Global stats: "N% got it today, most in X tries" in stats modal via `global_day_stats` RPC. Migration `0003_global_stats.sql` applied to live Supabase 2026-11-18 (via Composio; function + grants verified: anon and authenticated execute, public revoked, security definer, empty search_path).
