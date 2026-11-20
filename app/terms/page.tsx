@@ -6,6 +6,7 @@ const CONTACT = "qwertxboxmicro@gmail.com";
 
 export const metadata: Metadata = {
   title: "Terms | kikoe.io",
+  alternates: { canonical: "/terms" },
   description: "Terms for playing kikoe.io and for the Supporter subscription.",
 };
 

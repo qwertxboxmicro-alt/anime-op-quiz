@@ -93,6 +93,17 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 - [x] Hard mode (start at 0.05s). _Code: `SCHEDULES["0.05"]`, Endless "Start at" option._
 - [x] Streaks (stats modal), archive of past days. _Code: Archive tab in `Game.tsx` replays `openingFor(day)`; not saved to `opq-v1`, not counted in stats._
 
+## SEO (audit 2026-11-20)
+
+Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
+
+- [ ] Homepage SSRs an empty body (`Game.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
+- [ ] Add `app/robots.ts` and `app/sitemap.ts` (`/`, `/privacy`, `/terms`); both 404 today.
+- [ ] Add `metadataBase` + canonical in `layout.tsx` (use `kikoe.io`).
+- [ ] Domain `kikoe.io` not live: attach in Vercel, 301 the `*.vercel.app` host, add to Search Console.
+- [ ] Retitle/description around "anime opening quiz"; add `WebSite` + `VideoGame` JSON-LD.
+- [ ] Later: archive pages (no answers in HTML), backlinks (r/anime, Product Hunt), optional `llms.txt`.
+
 ## Open questions
 
 - [x] Name: **kikoe.io** (decided 2026-11-20). Code rename done (text only; npm/repo/Supabase/Vercel ids and `opq-v1` unchanged). Discord app renamed. Still to do: buy/point the domain, rename the Razorpay plan, add the domain to Supabase redirect allow-list, Vercel domains, Turnstile widget hostname and the Razorpay website.
