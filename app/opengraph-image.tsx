@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "OPspot: guess the anime opening in 0.1 seconds";
+export const alt = "kikoe.io: guess the anime opening in 0.1 seconds";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
