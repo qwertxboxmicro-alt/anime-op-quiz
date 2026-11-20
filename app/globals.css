@@ -96,6 +96,9 @@ input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
 .modal input { width: 100%; }
 .modal .primary:disabled { opacity: .5; cursor: default; }
+.modal .oauth { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-weight: 600; }
+.modal .oauth:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.modal .oauth:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .modes .icon.on { color: var(--accent); border-color: var(--accent); }
 .opts select { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: .75rem; }
 /* Streamer mode: bigger type, wide layout, answer blurred until hovered, no cover art in suggestions */

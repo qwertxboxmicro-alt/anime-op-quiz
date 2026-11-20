@@ -150,8 +150,8 @@ export function AccountModal({ user, onClose, isSupporter, theme, onPick }: { us
       ) : (
         <>
           <p className="how">Sign in to keep your stats across devices.</p>
-          <button disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
-          <button disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
+          <button className="oauth" disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
+          <button className="oauth" disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
           <p className="how">Or use a one-time email link. No password.</p>
           <input type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
             onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />

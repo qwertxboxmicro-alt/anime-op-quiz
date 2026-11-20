@@ -319,7 +319,7 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
     <main className="game">
       <header>
         <h1>
-          OP<span>spot</span>
+          kikoe<span>.io</span>
         </h1>
         <p>{daily ? `Daily anime opening #${puzzleNo(day)}` : archive ? `Archive #${puzzleNo(day)}` : "Endless practice"}</p>
       </header>
