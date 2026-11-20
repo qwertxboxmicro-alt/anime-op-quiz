@@ -122,7 +122,7 @@ export default function Game() {
         )}
       </nav>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
-      {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
+      {modal === "stats" && <StatsModal user={user} day={day} isSupporter={isSupporter} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
       {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
       {!daily && arch !== null && isSupporter && (
         <div className="opts">

@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
 import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
-import { cloudEnabled, deleteAccount, fetchGlobalDay, fetchRows, sendLink, type GlobalDay, signOut, statsFromRows } from "@/lib/cloud";
+import { cloudEnabled, consumeFreeze, deleteAccount, fetchFreezes, fetchGlobalDay, fetchRows, sendLink, type GlobalDay, signOut } from "@/lib/cloud";
+import { freezeCandidates, monthKey, statsFromRows } from "@/lib/streak";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -31,12 +32,30 @@ export function HowTo({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function StatsModal({ user, day, onClose, onAccount }: { user: User | null; day: number; onClose: () => void; onAccount: () => void }) {
+export function StatsModal({ user, day, isSupporter, onClose, onAccount }: { user: User | null; day: number; isSupporter: boolean; onClose: () => void; onAccount: () => void }) {
   const [s, setS] = useState<Stats>(() => readStats());
+  const [freezes, setFreezes] = useState<number[] | null>(null); // supporter only; null = not loaded / not a supporter
   // Signed in: stats come from the account (synced across devices). Signed out: this device only.
+  // Supporters: auto-consume a freeze for a single missed day (server-side row), then bridge frozen days in the streak.
   useEffect(() => {
-    if (user) fetchRows().then((rows) => setS(statsFromRows(rows, day)));
-  }, [user, day]);
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      const rows = await fetchRows();
+      let frozen = isSupporter ? await fetchFreezes() : [];
+      if (isSupporter) {
+        for (const d of freezeCandidates(rows, day, frozen)) {
+          if (await consumeFreeze(d)) frozen = [...frozen, d];
+        }
+      }
+      if (!alive) return;
+      setS(statsFromRows(rows, day, frozen));
+      setFreezes(isSupporter ? frozen : null);
+    })();
+    return () => { alive = false; };
+  }, [user, day, isSupporter]);
+  // Freeze indicator: one per calendar month, so it is "used" once a freeze falls in this month.
+  const freezeUsed = !!freezes?.some((d) => monthKey(d) === monthKey(day));
   const [g, setG] = useState<GlobalDay | null>(null);
   useEffect(() => {
     fetchGlobalDay(day).then(setG);
@@ -60,6 +79,11 @@ export function StatsModal({ user, day, onClose, onAccount }: { user: User | nul
           </li>
         ))}
       </ol>
+      {freezes && (
+        <p className="how" aria-label="Streak freeze">
+          Streak freeze: {freezeUsed ? "used this month" : "ready (saves one missed day this month)"}
+        </p>
+      )}
       {g && g.played > 0 && g.wins > 0 && (
         <p className="how">
           {Math.round((g.wins / g.played) * 100)}% got it today, most in {top} {top === 1 ? "try" : "tries"}.

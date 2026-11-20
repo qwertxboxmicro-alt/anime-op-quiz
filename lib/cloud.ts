@@ -2,7 +2,6 @@
 // so the game still works signed out / unconfigured. Only the public anon key is used client-side;
 // row access is enforced by RLS (supabase/migrations/0001_results.sql).
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import type { Stats } from "@/lib/stats";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -58,19 +57,15 @@ export async function fetchRows(): Promise<Row[]> {
   return (data as Row[] | null) ?? [];
 }
 
-export function statsFromRows(rows: Row[], today: number): Stats {
-  const s: Stats = { played: rows.length, wins: 0, streak: 0, best: 0, last: 0, dist: [0, 0, 0, 0, 0, 0] };
-  let run = 0;
-  let prev = -1;
-  for (const r of [...rows].sort((a, b) => a.day - b.day)) {
-    if (r.won) { s.wins++; s.dist[r.tries - 1]++; }
-    run = r.won ? (prev === r.day - 1 && run > 0 ? run + 1 : 1) : 0;
-    s.best = Math.max(s.best, run);
-    prev = r.day;
-    s.last = r.day;
-  }
-  s.streak = s.last >= today - 1 ? run : 0; // streak lapses if you skip a whole day
-  return s;
+export async function fetchFreezes(): Promise<number[]> {
+  const { data } = (await sb()?.from("streak_freezes").select("day")) ?? { data: null };
+  return ((data as { day: number }[] | null) ?? []).map((r) => r.day);
+}
+
+// Records one auto-consumed freeze. RLS rejects it unless the user is an active supporter with no freeze that month.
+export async function consumeFreeze(day: number): Promise<boolean> {
+  const { error } = (await sb()?.from("streak_freezes").insert({ day })) ?? { error: null };
+  return !error;
 }
 
 export type GlobalDay = { played: number; wins: number; dist: number[] };
