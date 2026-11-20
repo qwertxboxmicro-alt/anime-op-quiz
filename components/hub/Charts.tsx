@@ -68,6 +68,8 @@ export function Charts() {
         </div>
         </div>
       </div>
+      <div className="h-ccols">
+      <div className="h-cmain">
       {SHELVES.map((s) => {
         const items = s.items.filter((i) => !k || i.kind === k);
         return items.length ? (
@@ -79,9 +81,11 @@ export function Charts() {
           </section>
         ) : null;
       })}
-      <div className="h-boards">
+      </div>
+      <aside className="h-boards">
         <Board title="Longest streaks" rows={STREAKS} />
         <Board title="Fastest solves today" rows={FAST} />
+      </aside>
       </div>
     </main>
   );

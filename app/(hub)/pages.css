@@ -211,3 +211,15 @@
   .hub .h-plate { flex-direction: column; text-align: center; }
   .hub .h-ptext { align-items: center; }
 }
+
+/* Charts: shelves left, demo leaderboards right on wide screens. */
+.hub .h-ccols { display: grid; gap: 28px; }
+.hub .h-cmain { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+@media (min-width: 1200px) {
+  .hub .h-ccols { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
+  .hub .h-ccols > .h-boards { grid-template-columns: minmax(0, 1fr); position: sticky; top: 80px; }
+}
+/* Me: profile plate hugs its content. */
+.hub .h-prof .h-plate { width: fit-content; min-width: min(480px, 100%); padding-right: 40px; }
+/* Chat empty scene blends into the pane instead of a hard rectangle. */
+.hub .h-scene svg { -webkit-mask-image: radial-gradient(ellipse 70% 75% at 50% 55%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 70% 75% at 50% 55%, #000 55%, transparent 100%); }
