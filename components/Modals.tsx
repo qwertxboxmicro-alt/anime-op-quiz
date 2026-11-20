@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
 import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
@@ -29,6 +30,7 @@ export function HowTo({ onClose }: { onClose: () => void }) {
         <li>Each miss or skip unlocks a longer clip.</li>
         <li>A new opening drops every day. Want more? Try <b>Endless</b>.</li>
       </ul>
+      <p className="how"><Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></p>
       <button className="primary" onClick={onClose}>Got it</button>
     </Shell>
   );
