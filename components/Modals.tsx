@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
 import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
+import { ThemePicker } from "@/components/ThemePicker";
+import type { ThemeId } from "@/lib/themes";
 import { cloudEnabled, consumeFreeze, deleteAccount, fetchFreezes, fetchGlobalDay, fetchRows, sendLink, signInWith, type GlobalDay, type Provider, signOut } from "@/lib/cloud";
 import { freezeCandidates, monthKey, statsFromRows } from "@/lib/streak";
 
@@ -96,7 +98,7 @@ export function StatsModal({ user, day, isSupporter, onClose, onAccount }: { use
   );
 }
 
-export function AccountModal({ user, onClose }: { user: User | null; onClose: () => void }) {
+export function AccountModal({ user, onClose, isSupporter, theme, onPick }: { user: User | null; onClose: () => void; isSupporter: boolean; theme: ThemeId; onPick: (id: ThemeId) => void }) {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -128,9 +130,10 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
   const needCaptcha = !!turnstileSiteKey && !captcha;
   return (
     <Shell title="Account" onClose={onClose}>
+      <ThemePicker isSupporter={isSupporter} theme={theme} onPick={onPick} />
       {user ? (
         <>
-          <p className="how">Signed in as <b>{user.email}</b>. Your daily results are saved to your account.</p>
+          <p className="how">Signed in as <b>{user.email}</b>. Your daily results are saved to your account.{isSupporter && <> <span className="badge">Supporter</span></>}</p>
           <button className="primary" onClick={() => signOut().then(onClose)}>Sign out</button>
           {!deleting ? (
             <button onClick={() => setDeleting(true)}>Delete account</button>

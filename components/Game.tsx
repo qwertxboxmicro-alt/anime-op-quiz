@@ -12,6 +12,7 @@ import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
 import { Leagues } from "@/components/Leagues";
 import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
+import { useTheme } from "@/lib/themes";
 import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
@@ -82,6 +83,7 @@ export default function Game() {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
   const { isSupporter, loading: supLoading } = useSupporter();
+  const [theme, setTheme] = useTheme(isSupporter);
   // On sign-in, upload finished local days (background, once per account; see backfillLocal).
   useEffect(() => {
     if (user && day !== null) backfillLocal(day);
@@ -121,7 +123,7 @@ export default function Game() {
       </nav>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} isSupporter={isSupporter} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
-      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
+      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} isSupporter={isSupporter} theme={theme} onPick={setTheme} />}
       {modal === "leagues" && <Leagues user={user} onClose={() => setModal(null)} />}
       {!daily && arch !== null && isSupporter && (
         <div className="opts">
