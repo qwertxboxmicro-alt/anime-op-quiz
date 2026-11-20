@@ -98,9 +98,9 @@ export function StatsModal({ user, day, isSupporter, onClose, onAccount }: { use
   );
 }
 
-export function AccountModal({ user, onClose, isSupporter, theme, onPick }: { user: User | null; onClose: () => void; isSupporter: boolean; theme: ThemeId; onPick: (id: ThemeId) => void }) {
+export function AccountModal({ user, onClose, isSupporter, theme, onPick, hint = "" }: { user: User | null; onClose: () => void; isSupporter: boolean; theme: ThemeId; onPick: (id: ThemeId) => void; hint?: string }) {
   const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState(hint);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
