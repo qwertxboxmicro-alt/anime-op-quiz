@@ -230,7 +230,7 @@ export default function Game() {
           </div>
         </div>
         <hr />
-        <div className="grp">
+        <div className="grp diff-list">
           <span className="lab">Difficulty</span>
           <div className="stack">
             {DIFFS.map((l, i) => (

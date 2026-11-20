@@ -177,13 +177,21 @@ export default function Scene() {
         for (const p of tr.puffs) blob(x + p.dx + sw - 1, cy + p.dy - p.ry * 0.35, p.rx * 0.75, p.ry * 0.6, "#86395d", true);
         for (const p of tr.puffs.slice(0, 5)) blob(x + p.dx + sw - p.rx * 0.3, cy + p.dy - p.ry * 0.6, p.rx * 0.35, p.ry * 0.3, "#c0628a", true);
       }
-      rect(0, ground, W, H - ground, "#07080d");
+      // Street: asphalt, curb, faint dashed lane that scrolls slowly.
+      rect(0, ground, W, H - ground, "#0b0c13");
+      rect(0, ground, W, 1, "#1b1c28");
+      const ly = ground + Math.round((H - ground) * 0.55);
+      for (let x = -((t * 6) % 16); x < W; x += 16) rect(x, ly, 7, 1, "#1d1e2b");
       for (let x = 0; x < W; x += 5) rect(x, ground - 4, 1, 4, "#0c0d16");
       rect(0, ground - 4, W, 1, "#0c0d16");
       for (const f of [0.42, 0.8]) {
         const lx = Math.round(W * f), ly = ground - Math.round(H * 0.07), on = Math.sin(t * 7 + f * 50) > -0.97;
-        g.globalAlpha = on ? 0.16 : 0.06;
-        blob(lx, ly + 1, Math.round(H * 0.022), Math.round(H * 0.018), "#ffc977");
+        // Soft glow: stacked rings, faint at the edge, warmer at the centre.
+        g.globalAlpha = on ? 0.06 : 0.02;
+        for (const k of [1, 0.66, 0.36]) {
+          blob(lx, ly + 1, Math.round(H * 0.03 * k), Math.round(H * 0.026 * k), "#ffc977");
+          blob(lx, ground + 3, Math.round(H * 0.06 * k), Math.max(1, Math.round(4 * k)), "#ffd890");
+        }
         g.globalAlpha = 1;
         rect(lx, ly, 1, ground - ly, "#191a26");
         rect(lx - 2, ly, 4, 2, on ? "#ffe2a0" : "#6b5a3a");

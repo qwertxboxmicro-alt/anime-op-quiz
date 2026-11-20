@@ -255,6 +255,7 @@ html.streamer { font-size: 20px; }
   .foot { position: static; order: 3; justify-content: center; padding: 8px 0 32px; }
   .burger-wrap { position: absolute; top: 12px; left: 12px; }
   .shell::after { display: none; }
+  .diff-list, .diff-list + hr { display: none; }
   .game { background: radial-gradient(ellipse 70% 55% at 50% 45%, color-mix(in srgb, var(--bg) 80%, transparent), transparent 75%); }
   .cards { margin: 0; grid-template-columns: repeat(3, 1fr); -webkit-mask-image: none; mask-image: none; }
   .mast h1 { color: color-mix(in srgb, var(--text) 16%, var(--bg)); }
