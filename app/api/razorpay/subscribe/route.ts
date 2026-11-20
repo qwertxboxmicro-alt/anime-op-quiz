@@ -1,6 +1,7 @@
 // Server-only: creates a Razorpay subscription for the CALLER. The user id comes from the verified access token,
 // never from the body, and is stored in subscription notes so the webhook can map payments back to the user.
 import { createClient } from "@supabase/supabase-js";
+import { isActiveSupporter } from "@/lib/supporter-access";
 
 const fail = (status: number, error: string) => Response.json({ error }, { status });
 
@@ -26,6 +27,22 @@ export async function POST(request: Request) {
   const supabase = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error: authErr } = await supabase.auth.getUser(token);
   if (authErr || !data.user) return fail(401, "Not signed in.");
+
+  // Block a second subscription. Read the caller's own row through RLS with their token (no service role).
+  const callerDb = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data: row, error: rowErr } = await callerDb
+    .from("supporters")
+    .select("active, current_period_end")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+  if (rowErr) {
+    console.error("razorpay subscribe: supporter lookup failed", rowErr.message);
+    return fail(503, "Subscriptions are unavailable.");
+  }
+  if (isActiveSupporter(row)) return fail(409, "You're already a Supporter.");
 
   try {
     const r = await fetch("https://api.razorpay.com/v1/subscriptions", {
