@@ -11,6 +11,7 @@ import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
 import { Leagues } from "@/components/Leagues";
 import Scene from "@/components/Scene";
+import { Dropdown } from "@/components/Dropdown";
 import { IChev, IGrid, IMenu, IMic, INote, IPlay, IPlayLine, IReroll, ISearch, IShuffle, ISkip, IStop, ISwap } from "@/components/Icons";
 import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
@@ -209,26 +210,13 @@ export default function Game() {
           <label className="lab" htmlFor="f-type">
             Type <span className="new">New</span>
           </label>
-          <div className="sel warm">
-            <IMic />
-            <select id="f-type" value={ed ? "ed" : "op"} onChange={(e) => pickType(e.target.value === "ed")}>
-              <option value="op">Openings</option>
-              <option value="ed">Endings</option>
-            </select>
-            <IChev />
-          </div>
+          <Dropdown id="f-type" warm icon={<IMic />} value={ed ? "ed" : "op"} onChange={(v) => pickType(v === "ed")}
+            options={[{ value: "op", label: "Openings" }, { value: "ed", label: "Endings" }]} />
         </div>
         <div className="grp">
           <label className="lab" htmlFor="f-era">Era</label>
-          <div className="sel">
-            <IGrid />
-            <select id="f-era" value={decade} onChange={(e) => { const v = Number(e.target.value); setDecade(v); practiceWith(diff, v, ed); }}>
-              {DECADES.map((d) => (
-                <option key={d} value={d}>{d === 0 ? "Any era" : d === 1990 ? "Classic (≤1990s)" : `${d}s`}</option>
-              ))}
-            </select>
-            <IChev />
-          </div>
+          <Dropdown id="f-era" icon={<IGrid />} value={decade} onChange={(v) => { setDecade(v); practiceWith(diff, v, ed); }}
+            options={DECADES.map((d) => ({ value: d as number, label: d === 0 ? "Any era" : d === 1990 ? "Classic (≤1990s)" : `${d}s` }))} />
         </div>
         <hr />
         <div className="grp diff-list">
