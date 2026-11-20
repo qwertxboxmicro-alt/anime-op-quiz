@@ -117,3 +117,46 @@ html[data-theme="violet"] { --bg: #09060f; --card: #130e1f; --line: #2a1f40; --t
 .swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line); font-size: .7rem; }
 .swatch.on { outline: 2px solid var(--text); outline-offset: 2px; }
 .upgrade { display: flex; flex-direction: column; gap: 8px; }
+
+/* Gemini redesign (adapted to real selectors): glass cards, depth, pulsing play button */
+body { background: radial-gradient(80% 45% at 50% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%), radial-gradient(60% 40% at 85% 100%, #6366f114, transparent 70%) var(--bg); font-family: "Plus Jakarta Sans", Inter, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+.modes { background: color-mix(in srgb, var(--card) 72%, transparent); backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 8px 24px #0006, inset 0 1px 0 #ffffff0d; padding: 5px; margin: 16px auto 0; width: calc(100% - 32px); overflow-x: auto; scrollbar-width: none; }
+.modes button { flex: 1 1 auto; border-color: transparent; background: transparent; font-weight: 700; white-space: nowrap; transition: background-color .2s, color .2s, transform .15s, box-shadow .2s; }
+.modes button:hover { color: var(--text); background: #ffffff0d; }
+.modes button:active { transform: scale(.97); }
+.modes button.on { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 24%, var(--card)), color-mix(in srgb, var(--accent) 12%, var(--card))); border-color: color-mix(in srgb, var(--accent) 48%, transparent); color: var(--text); box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 22%, transparent), inset 0 1px 0 #ffffff1f; }
+h1 { letter-spacing: -.035em; }
+h1 span { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 75%, #fff), var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 35%, transparent)); }
+.bar li { height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; font-weight: 700; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--card) 75%, transparent); backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 #ffffff0a; transition: all .25s; }
+.bar .now { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 26%, var(--card)), color-mix(in srgb, var(--accent) 14%, var(--card))); color: var(--text); transform: translateY(-1px); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 26%, transparent), inset 0 1px 0 #ffffff26; }
+.bar .ok { background: color-mix(in srgb, var(--accent) 18%, var(--card)); border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: color-mix(in srgb, var(--accent) 85%, #fff); }
+.bar .miss { background: color-mix(in srgb, var(--miss) 16%, var(--card)); border-color: color-mix(in srgb, var(--miss) 45%, transparent); color: color-mix(in srgb, var(--miss) 85%, #fff); }
+.track { box-shadow: inset 0 2px 5px #0008; }
+.track i { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 78%, #059669), color-mix(in srgb, var(--accent) 85%, #a7f3d0)); box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 65%, transparent); }
+@keyframes playPulse { 0%, 100% { box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 42%, transparent), 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent), inset 0 1.5px 1px #ffffff73; } 50% { box-shadow: 0 14px 36px color-mix(in srgb, var(--accent) 58%, transparent), 0 0 0 14px transparent, inset 0 1.5px 1px #ffffff73; } }
+.play:not(.small) { border-color: color-mix(in srgb, var(--accent) 70%, #fff); background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 68%, #fff), var(--accent) 58%, color-mix(in srgb, var(--accent) 72%, #022c22)); color: #04130b; font-weight: 800; animation: playPulse 2.4s ease-in-out infinite; transition: transform .2s cubic-bezier(.22, 1, .36, 1), filter .2s; }
+.play:not(.small) small { color: #04130bb3; }
+.play:not(.small):hover:not(:disabled) { transform: scale(1.06); filter: brightness(1.07); }
+.play:disabled { animation: none; }
+.play.small { background: color-mix(in srgb, var(--card) 80%, transparent); transition: border-color .2s, transform .15s; }
+.log li { display: flex; align-items: center; min-height: 44px; font-weight: 600; background: color-mix(in srgb, var(--card) 68%, transparent); backdrop-filter: blur(14px); box-shadow: 0 4px 14px #0003, inset 0 1px 0 #ffffff0a; }
+.log .wrong { background: linear-gradient(90deg, color-mix(in srgb, var(--miss) 18%, var(--card)), color-mix(in srgb, var(--card) 82%, transparent)); box-shadow: 0 4px 16px color-mix(in srgb, var(--miss) 14%, transparent), inset 3px 0 0 var(--miss); }
+.log li.skip { border-style: dashed; background: color-mix(in srgb, var(--card) 42%, transparent); font-size: .78rem; letter-spacing: .03em; text-transform: uppercase; box-shadow: none; }
+.log .correct { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, var(--card)), color-mix(in srgb, var(--card) 84%, transparent)); color: var(--text); box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 22%, transparent), inset 3px 0 0 var(--accent); }
+input { background: color-mix(in srgb, var(--card) 82%, transparent); backdrop-filter: blur(16px); box-shadow: 0 6px 20px #0000004d, inset 0 1px 0 #ffffff0d; transition: border-color .2s, box-shadow .2s; }
+input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), 0 10px 26px #0006; }
+.guess .skip { font-weight: 700; box-shadow: 0 6px 18px #00000047, inset 0 1px 0 #ffffff0f; transition: border-color .2s, transform .15s; }
+.guess .skip:hover { border-color: #ffffff38; color: var(--text); transform: translateY(-1px); }
+.guess .skip:active { transform: scale(.96); }
+.sugg { padding: 6px; border-radius: 16px; background: color-mix(in srgb, var(--card) 92%, #05070c); backdrop-filter: blur(22px); border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); box-shadow: 0 20px 48px #000b, inset 0 1px 0 #ffffff12; }
+.sugg li { font-weight: 500; transition: background-color .15s, color .15s; }
+.sugg li.on, .sugg li:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); }
+.result { border-radius: 20px; background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 12%, var(--card)), color-mix(in srgb, var(--card) 86%, #05070c) 55%); backdrop-filter: blur(20px); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); box-shadow: 0 20px 48px #0008, inset 0 1px 0 #ffffff14; }
+.poster { border: 1px solid #ffffff29; box-shadow: 0 14px 32px #000a, 0 0 24px color-mix(in srgb, var(--accent) 18%, transparent); }
+.ans { font-weight: 800; letter-spacing: -.02em; }
+.primary { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent) 45%, color-mix(in srgb, var(--accent) 75%, #059669)); font-weight: 800; box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 36%, transparent), inset 0 1px 0 #ffffff73; transition: transform .18s cubic-bezier(.22, 1, .36, 1), filter .18s, box-shadow .18s; }
+.primary:hover:not(:disabled) { transform: translateY(-1.5px); filter: brightness(1.06); }
+.primary:active:not(:disabled) { transform: scale(.97); }
+.overlay { background: #05070cbd; backdrop-filter: blur(12px); }
+.modal { border-radius: 22px; background: linear-gradient(165deg, color-mix(in srgb, var(--card) 94%, #fff 4%), color-mix(in srgb, var(--card) 92%, #05070c)); border-color: #ffffff1f; box-shadow: 0 28px 70px #000c, inset 0 1px 0 #ffffff14; max-height: 85dvh; overflow-y: auto; }
+@media (prefers-reduced-motion: reduce) { .play { animation: none !important; } * { transition-duration: .01ms !important; } }
