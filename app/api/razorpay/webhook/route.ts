@@ -12,6 +12,7 @@ const ACTIVE: Record<string, boolean> = {
   "subscription.charged": true,
   "subscription.cancelled": false,
   "subscription.halted": false,
+  "subscription.completed": false,
 };
 
 type Entity = {
@@ -50,9 +51,25 @@ export async function POST(request: Request) {
 
   const entity = body.payload?.subscription?.entity;
   const userId = entity?.notes?.user_id;
-  if (!entity?.id || !userId) return fail(400, "Missing subscription or user_id.");
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // Bad data can never succeed on retry, so answer 400 rather than let the upsert 500 and Razorpay loop.
+  if (!entity?.id || !userId || !UUID.test(userId)) return fail(400, "Missing subscription or user_id.");
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  // A deactivation only counts for the subscription on file: cancelling an old subscription must not
+  // switch off a newer active one. (Events can still arrive out of order; ponytail: add event timestamps if it matters.)
+  if (!ACTIVE[event]) {
+    const { error } = await admin
+      .from("supporters")
+      .update({ active: false, current_period_end: entity.current_end ? new Date(entity.current_end * 1000).toISOString() : null, updated_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .eq("razorpay_subscription_id", entity.id);
+    if (error) {
+      console.error("razorpay webhook: update failed", error.message);
+      return fail(500, "Could not record subscription.");
+    }
+    return Response.json({ ok: true });
+  }
   const { error } = await admin.from("supporters").upsert(
     {
       user_id: userId,

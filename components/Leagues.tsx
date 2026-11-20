@@ -30,8 +30,8 @@ export function Leagues({ user, onClose }: { user: User | null; onClose: () => v
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user && isSupporter) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isSupporter]);
 
   // Runs an RPC, reports the outcome, and refreshes the list on success.

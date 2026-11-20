@@ -58,6 +58,10 @@ declare
   v_id uuid;
 begin
   if auth.uid() is null then raise exception 'sign in required'; end if;
+  if not exists (
+    select 1 from public.supporters s
+    where s.user_id = auth.uid() and s.active and (s.current_period_end is null or s.current_period_end > now())
+  ) then raise exception 'supporter required'; end if;
   insert into public.leagues (name)
   values (btrim(p_name))
   returning id into v_id;
@@ -79,6 +83,10 @@ declare
   v_count integer;
 begin
   if auth.uid() is null then raise exception 'sign in required'; end if;
+  if not exists (
+    select 1 from public.supporters s
+    where s.user_id = auth.uid() and s.active and (s.current_period_end is null or s.current_period_end > now())
+  ) then raise exception 'supporter required'; end if;
   select l.id into v_id from public.leagues l
   where l.invite_code = upper(btrim(code))
   for update;

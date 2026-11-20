@@ -30,6 +30,7 @@ function writeStored(id: ThemeId) {
 // Returns the saved choice and a setter. Applies the theme to <html data-theme> only when supporter.
 export function useTheme(isSupporter: boolean): [ThemeId, (id: ThemeId) => void] {
   const [theme, setTheme] = useState<ThemeId>("default");
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- read after mount to avoid a hydration mismatch
   useEffect(() => setTheme(readStored()), []);
   useEffect(() => {
     const applied = isSupporter ? theme : "default";
