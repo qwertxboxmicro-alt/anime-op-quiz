@@ -77,8 +77,8 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 Rule: daily puzzle, stats, streak display and global stats stay free for everyone. Paid = extras only.
 
 - [x] Supporter tier entitlement core (price still TBD, rough idea ~$2/month or ~$15/year). _Built: migration `0004_supporters.sql` (not applied to live), webhook `app/api/razorpay/webhook/route.ts` (HMAC-verified, fail-closed, service role upsert), subscribe stub `app/api/razorpay/subscribe/route.ts`, client hook `lib/useSupporter.ts` (`useSupporter()` → `{isSupporter, loading}`). Provider: Razorpay (untested live)._
-- [ ] Streak freeze: a missed day doesn't break the streak. Cap and refill rule TBD.
-- [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `components/Leagues.tsx`, gated by `useSupporter` (temporary stub in `lib/useSupporter.ts`)._
+- [x] Streak freeze: 1 per calendar month, auto-used for a single missed day, no stacking. _Built (not applied live): migration `0006_streak_freezes.sql` (RLS: active supporter, one per month), pure `lib/streak.ts`, client sync in `StatsModal`, self-check `node scripts/streak-check.mjs`. Signed-out and non-supporter streaks unchanged._
+- [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `components/Leagues.tsx`, gated by `useSupporter` (real `lib/useSupporter.ts`)._
 - [ ] Cosmetics: themes and badges, no gameplay effect.
 - [x] Archive of past dailies becomes **paid**: go back to older days and play them. _Built: `Game.tsx` shows `ArchiveLocked` (upgrade prompt) unless `useSupporter().isSupporter`; supporters get the unchanged archive. Archive runs still do not save to `opq-v1` or count toward stats/streak._
 - [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
