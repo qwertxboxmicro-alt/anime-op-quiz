@@ -77,7 +77,7 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 
 - [ ] Supporter tier: price TBD (rough idea ~$2/month or ~$15/year). Entitlement stored per Supabase user (`supporters` table, written only by a payment webhook route using the service role key, never client-side). Payment provider TBD (Stripe; Razorpay if India).
 - [ ] Streak freeze: a missed day doesn't break the streak. Cap and refill rule TBD.
-- [ ] Private friend leagues: create/join by invite code, shared leaderboard + group stats. Needs new tables + RLS (members read only their own league).
+- [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `components/Leagues.tsx`, gated by `useSupporter` (temporary stub in `lib/useSupporter.ts`)._
 - [ ] Cosmetics: themes and badges, no gameplay effect.
 - [ ] Archive of past dailies becomes **paid**: go back to older days and play them. Today the Archive tab in `Game.tsx` is free and replays `openingFor(day)` without saving to `opq-v1` or stats; gate it behind Supporter. Decide: do archive runs count toward stats/streak (currently no, keep no).
 - [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
