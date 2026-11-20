@@ -64,3 +64,21 @@ Notes (not fixed, no code changed):
 - Robustness only: `components/Game.tsx` `o?.start in SCHEDULES` accepts inherited keys like `"toString"` from a tampered `opq-opts`; use `Object.hasOwn(SCHEDULES, o?.start)`. Left alone because another session is editing Game.tsx. Also validate `opq-stats` `dist` shape on read.
 - Possible later: COOP/CORP headers, canonical origin for og:image.
 - Coverage limit: black-box, unauthenticated, no live Supabase. Re-run after wiring auth or the delete-account service key against a test Supabase project.
+
+## Re-run 2026-11-20: BLOCKED (LLM upstream), no scan completed
+Target: local prod build on port 3000 (`npm run build`, `next start`), dummy Supabase URL `http://127.0.0.1:9`, anon key `dummy`, `SUPABASE_SERVICE_ROLE_KEY` empty (so delete-account fails closed, 503, as in the last scan). `strix -n -m standard --max-budget 5`, `env -u STRIX_LLM -u LLM_API_KEY`. Docker Desktop started; daemon up (Docker 29.9.3).
+
+| Model tried | Result |
+|---|---|
+| `openrouter/thinkingmachines/inkling-2-small:free` (file config) | 404: "unavailable for free, paid version is available: `thinkingmachines/inkling-2-small`". Not switched to the paid slug (would spend the owner's credit). |
+| `openrouter/inclusionai/ling-3.2-flash:free` (private config copy) | 429 upstream rate limit (shared pool) |
+| `openrouter/nvidia/nemotron-3.5-lightning:free` (private config copy) | no answer in 30 s (LLM_PREFLIGHT_TIMEOUT) |
+
+Free + tools list at the time (OpenRouter `/models`, 2026-11-20): ling-3.2-flash, ernie-5.5-flash-preview, lfm-3-1.7b, particle-1, flint-v1.0, nemotron-3.5-super-vl, dots-3-note-preview, nemotron-3.5-lightning, nemotron-3-ultra-550b, nemotron-3-nano-omni, gemma-4-26b-it, gemma-4-31b-it, openrouter/free.
+
+Result: **0 scan requests, 0 findings.** The earlier 2026-11-18 scan stays the latest.
+Owner must choose one:
+1. Pay for the model (`thinkingmachines/inkling-2-small`, paid) in `~/.strix/cli-config.json`, or
+2. Add your own provider key (BYOK) on OpenRouter for a free model, or
+3. Retry later when a free slug has quota.
+Then re-run with the command in "Re-run" above (env -u for both vars, same port 3000 prod build). Strix writes config back to the file it runs with: use a private `--config` copy, as tried here.
