@@ -41,6 +41,16 @@ function useCountdown() {
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 }
 
+// Static masthead: same markup as the ready header, so SSR HTML has the h1 and the flip doesn't shift.
+const Masthead = ({ sub }: { sub: string }) => (
+  <header>
+    <h1>
+      kikoe<span>.io</span>
+    </h1>
+    <p>{sub}</p>
+  </header>
+);
+
 export default function Game() {
   // Date.now() can't run during prerender, so read the day after mount.
   const [day, setDay] = useState<number | null>(null);
@@ -102,7 +112,8 @@ export default function Game() {
     setEndless(randomOpening(d, dec, e));
     setRound((r) => r + 1);
   };
-  if (day === null) return null;
+  // Pre-mount: render the masthead so the server HTML has the h1 (Play isn't mounted until day is set).
+  if (day === null) return <main className="game"><Masthead sub="Daily anime opening quiz" /></main>;
   const practice = !daily && arch === null;
   const opening = daily ? openingFor(day) : arch !== null ? openingFor(arch) : endless ?? openingFor(day);
 
@@ -315,7 +326,7 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
     } catch {}
   };
 
-  if (!ready) return null;
+  if (!ready) return <main className="game"><Masthead sub={daily ? "Daily anime opening quiz" : archive ? "Archive" : "Endless practice"} /></main>;
 
   return (
     <main className="game">

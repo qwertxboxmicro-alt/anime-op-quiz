@@ -6,6 +6,7 @@ const CONTACT = "qwertxboxmicro@gmail.com";
 
 export const metadata: Metadata = {
   title: "Privacy | kikoe.io",
+  alternates: { canonical: "/privacy" },
   description: "What kikoe.io stores, where it goes, and how to delete it.",
 };
 
