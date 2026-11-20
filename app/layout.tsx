@@ -3,7 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "800"], style: ["normal", "italic"] });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], style: ["normal", "italic"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

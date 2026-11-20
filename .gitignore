@@ -43,3 +43,6 @@ next-env.d.ts
 
 # strix
 strix_runs/
+
+# cook run state (third-party refs)
+/cook/
