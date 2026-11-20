@@ -104,6 +104,16 @@ Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
 - [ ] Retitle/description around "anime opening quiz"; add `WebSite` + `VideoGame` JSON-LD.
 - [ ] Later: archive pages (no answers in HTML), backlinks (r/anime, Product Hunt), optional `llms.txt`.
 
+## Game hub (decided 2026-11-20, not started)
+
+All browser games go into one hub: one Next.js app, each game on its own route, one shared account. Hub plan and open questions: `../CLAUDE.md`. Sister game: `../anime-krillion` (Skidmark).
+
+- [ ] Decide if this repo becomes the hub (likely) and move OP Quiz under its own route (e.g. `/op-quiz`), with a hub home page at `/`. Redirect old links.
+- [ ] Shared Supabase: likely this project. `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table. Write as a new migration; never edit applied ones.
+- [ ] Split shared code (auth/Account dialog, stats modal, share, countdown, Supporter, themes) from OP Quiz-only code.
+- [ ] Hub-wide or per-game Supporter tier.
+- [ ] Domain: kikoe.io is this game's name; hub name/domain not decided. SEO items above assume kikoe.io and may change.
+
 ## Open questions
 
 - [x] Name: **kikoe.io** (decided 2026-11-20). Code rename done (text only; npm/repo/Supabase/Vercel ids and `opq-v1` unchanged). Discord app renamed. Still to do: buy/point the domain, rename the Razorpay plan, add the domain to Supabase redirect allow-list, Vercel domains, Turnstile widget hostname and the Razorpay website.
