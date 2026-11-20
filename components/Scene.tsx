@@ -7,7 +7,7 @@ const SKY = ["#0b1222", "#121a30", "#1c2038", "#2c2540", "#462b45", "#6a3346", "
 const rng = (seed: number) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 
 type Win = { x: number; y: number; k: number };
-type Bldg = { x: number; w: number; h: number };
+type Bldg = { x: number; w: number; h: number; step: number; ant: number };
 type House = { x: number; w: number; h: number; roof: number };
 type Cloud = { x: number; y: number; w: number; v: number; front: boolean };
 type Petal = { x: number; y: number; vx: number; vy: number; p: number; c: string };
@@ -27,10 +27,11 @@ function makeWorld(W: number, H: number) {
   for (let x = -4; x < W; ) {
     const w = 8 + Math.floor(r() * 14);
     const h = Math.round(H * (0.03 + r() * (r() < 0.15 ? 0.16 : 0.08)));
-    bldgs.push({ x, w, h });
+    bldgs.push({ x, w, h, step: r() < 0.35 ? Math.round(h * (0.15 + r() * 0.2)) : 0, ant: r() < 0.25 ? 3 + Math.floor(r() * 6) : 0 });
     for (let wy = hz - h + 3; wy < hz - 2; wy += 4) for (let wx = x + 2; wx < x + w - 2; wx += 3) wins.push({ x: wx, y: wy, k: r() });
     x += w + (r() < 0.3 ? 2 : 0);
   }
+  const far = Array.from({ length: Math.ceil(W / 10) }, (_, i) => ({ x: i * 10 + Math.floor(r() * 4), w: 6 + Math.floor(r() * 9), h: Math.round(H * (0.05 + r() * 0.1)) }));
   const ground = Math.round(H * 0.92);
   const houses: House[] = [];
   for (let x = -10; x < W; ) {
@@ -48,7 +49,7 @@ function makeWorld(W: number, H: number) {
     return { x: Math.round(W * f), R, puffs };
   });
   const poles = [0.12, 0.47, 0.86].map((f) => Math.round(W * f));
-  return { hz, ground, rail: Math.round(H * 0.855), stars, mount, bldgs, wins, houses, hwins, clouds, petals, poles, trees };
+  return { hz, ground, rail: Math.round(H * 0.855), stars, mount, far, bldgs, wins, houses, hwins, clouds, petals, poles, trees };
 }
 
 export default function Scene() {
@@ -125,7 +126,17 @@ export default function Scene() {
       for (const cl of world.clouds) if (!cl.front) cloud(cl);
       // Far hills, then the skyline with flickering windows.
       for (let x = 0; x < W; x++) rect(x, hz - world.mount[x], 1, world.mount[x], "#2a2038");
-      for (const b of world.bldgs) rect(b.x, hz - b.h, b.w, b.h + 1, "#191729");
+      const fo = (t * 1.6) % W;
+      for (const f of world.far) for (const o of [-fo, W - fo]) rect(f.x + o, hz - f.h, f.w, f.h, "#241e35");
+      for (const b of world.bldgs) {
+        const top = hz - b.h;
+        rect(b.x, top + b.step, b.w, b.h - b.step + 1, "#191729");
+        if (b.step) rect(b.x + Math.round(b.w * 0.25), top, Math.round(b.w * 0.5), b.step + 1, "#191729");
+        if (b.ant) {
+          rect(b.x + Math.round(b.w / 2), top - b.ant, 1, b.ant, "#191729");
+          if (Math.floor(t * 1.2 + b.x) % 3 === 0) rect(b.x + Math.round(b.w / 2), top - b.ant - 1, 1, 1, "#ff5a5a");
+        }
+      }
       const slot = Math.floor(t / 2);
       for (const w of world.wins) {
         // Half the windows re-roll every 2s, so a few switch on/off at a time.
