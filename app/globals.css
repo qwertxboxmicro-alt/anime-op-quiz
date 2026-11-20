@@ -49,7 +49,6 @@ input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .actions a { color: var(--dim); font-size: .85rem; }
 .next { color: var(--dim); font-size: .85rem; margin-top: 8px; }
 .next b { color: var(--text); font-variant-numeric: tabular-nums; }
-.intro { max-width: 480px; margin: 0 auto; padding: 0 16px 40px; display: grid; gap: 8px; color: var(--dim); font-size: .85rem; }
 
 @media (prefers-reduced-motion: no-preference) { .play { transition: transform .1s; } .play:active:not(:disabled) { transform: scale(.95); } }
 
