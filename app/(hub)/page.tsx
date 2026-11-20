@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { PixelCanvas } from "@/components/hub/PixelCanvas";
 import { FriendsRow, GameGrid, HeroHud, ModeShelf } from "@/components/hub/Home";
@@ -22,9 +21,7 @@ export default function HubHome() {
           </div>
         </div>
       </section>
-      <Suspense fallback={null}>
-        <GameGrid />
-      </Suspense>
+      <GameGrid />
       <FriendsRow />
       <ModeShelf />
     </main>

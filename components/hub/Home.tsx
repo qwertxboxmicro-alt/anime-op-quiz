@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useHub } from "@/platform/hub";
 import { readStats } from "@/games/op-quiz/stats";
 import { GAMES, MODES, type GameEntry } from "@/games/registry";
@@ -87,7 +86,10 @@ export function GameTile({ g }: { g: GameEntry }) {
 }
 
 export function GameGrid() {
-  const q = (useSearchParams().get("q") ?? "").trim().toLowerCase();
+  // Read ?q after mount (useSearchParams + Suspense left the grid stuck in a hidden streaming container).
+  const [q, setQ] = useState("");
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- URL is only known on the client
+  useEffect(() => setQ((new URLSearchParams(location.search).get("q") ?? "").trim().toLowerCase()), []);
   const list = GAMES.filter((g) => !q || `${g.name} ${g.genre} ${g.blurb}`.toLowerCase().includes(q));
   return (
     <section className="h-sec">
