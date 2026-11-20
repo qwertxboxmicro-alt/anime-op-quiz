@@ -1,6 +1,6 @@
 # Anime Opening Quiz — Spec
 
-Working name. Daily web game: hear a tiny clip of an anime opening, guess the anime. Clip grows each miss.
+kikoe.io. Daily web game: hear a tiny clip of an anime opening, guess the anime. Clip grows each miss.
 
 ## Why this
 
@@ -94,6 +94,6 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 
 ## Open questions
 
-- [ ] Final name + domain. (Live site currently shows "OPspot".)
+- [x] Name: **kikoe.io** (decided 2026-11-20). Still to do: buy/point the domain, rename in code (`app/layout.tsx`, `app/opengraph-image.tsx` still say "OPspot"), rename the Razorpay plan and Discord app, add the domain to Supabase redirect allow-list, Vercel domains, Turnstile widget hostname and the Razorpay website.
 - [ ] Guess the anime only, or bonus point for song title?
 - [x] Which ~60 openings for launch? 60 in `data/openings.ts` (2026-11-18); start offsets are heuristic, not checked by ear. Owner to review the picks.
