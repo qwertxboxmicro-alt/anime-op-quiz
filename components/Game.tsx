@@ -6,10 +6,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, poster, puzzleNo, shareText, todayNum, won, type Guess, type Meta } from "@/lib/game";
 import { OPENINGS, type Opening } from "@/data/openings";
 import { ENDINGS } from "@/data/endings";
-import { loadClip, play, stop } from "@/lib/audio";
+import { loadClip, play, setVolume, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
 import { Leagues } from "@/components/Leagues";
+import Scene from "@/components/Scene";
+import { IChev, IGrid, IMenu, IMic, INote, IPlay, IPlayLine, IReroll, ISearch, IShuffle, ISkip, IStop, ISwap } from "@/components/Icons";
 import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
 import { useTheme } from "@/lib/themes";
@@ -18,8 +20,14 @@ import type { User } from "@supabase/supabase-js";
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
 const KEY = "opq-v1";
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const save = (k: string, v: string) => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {}
+};
 
 const DECADES = [0, 1990, 2000, 2010, 2020] as const; // 0 = all; 1990 = 1999 and earlier
+const DIFFS = ["Any", "Easy", "Medium", "Hard"] as const;
 const decadeOf = (y: number) => Math.max(1990, Math.floor(y / 10) * 10);
 const pick1 = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 // d = difficulty, dec = decade (0 = any), ed = endings pool. Empty filter combo falls back to the whole pool.
@@ -41,14 +49,20 @@ function useCountdown() {
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 }
 
-// Static masthead: same markup as the ready header, so SSR HTML has the h1 and the flip doesn't shift.
+// Static masthead: same markup before and after mount, so SSR HTML has the h1 and nothing shifts.
 const Masthead = ({ sub }: { sub: string }) => (
-  <header>
+  <header className="mast">
     <h1>
       kikoe<span>.io</span>
     </h1>
     <p>{sub}</p>
   </header>
+);
+
+const Toggle = ({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) => (
+  <button className="tog" role="switch" aria-checked={on} aria-label={label} onClick={onClick}>
+    <i />
+  </button>
 );
 
 export default function Game() {
@@ -58,17 +72,23 @@ export default function Game() {
   const [daily, setDaily] = useState(true);
   const [arch, setArch] = useState<number | null>(null); // past day being replayed (never saved or counted)
   const [streamer, setStreamer] = useState(false);
+  const [vol, setVol] = useState(0.8);
+  const [covers, setCovers] = useState(true);
+  const [menu, setMenu] = useState(false);
+  const [optsOpen, setOptsOpen] = useState(false); // narrow screens: side panels fold behind a button
   useEffect(() => {
     try {
       setStreamer(localStorage.getItem("opq-streamer") === "1");
+      setCovers(localStorage.getItem("opq-covers") !== "0");
+      const v = Number(localStorage.getItem("opq-vol") ?? "0.8");
+      if (v >= 0 && v <= 1) setVol(v);
     } catch {}
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("streamer", streamer);
-    try {
-      localStorage.setItem("opq-streamer", streamer ? "1" : "0");
-    } catch {}
+    save("opq-streamer", streamer ? "1" : "0");
   }, [streamer]);
+  useEffect(() => setVolume(vol), [vol]);
   const [diff, setDiff] = useState<0 | 1 | 2 | 3>(0); // 0 = all
   const [decade, setDecade] = useState<number>(0);
   const [ed, setEd] = useState(false);
@@ -80,14 +100,6 @@ export default function Game() {
       if (o?.start in SCHEDULES) setOpts(o);
     } catch {}
   }, []);
-  const setOpt = (o: Partial<typeof opts>) => {
-    const n = { ...opts, ...o };
-    setOpts(n);
-    try {
-      localStorage.setItem("opq-opts", JSON.stringify(n));
-    } catch {}
-    next(); // new round so the new setting applies cleanly
-  };
   const [endless, setEndless] = useState<Opening | null>(null);
   const [modal, setModal] = useState<"how" | "stats" | "account" | "leagues" | null>(null);
   const [accountHint, setAccountHint] = useState("");
@@ -99,109 +111,307 @@ export default function Game() {
   useEffect(() => {
     if (user && day !== null) backfillLocal(day);
   }, [user, day]);
+
+  const next = (d: number = diff, dec: number = decade, e: boolean = ed) => {
+    setEndless(randomOpening(d, dec, e));
+    setRound((r) => r + 1);
+  };
+  // Every filter is an Endless setting: touching one leaves Daily, so the daily puzzle and its stats never change.
+  const practiceWith = (d: number = diff, dec: number = decade, e: boolean = ed) => {
+    setDaily(false);
+    setArch(null);
+    next(d, dec, e);
+  };
+  const setOpt = (o: Partial<typeof opts>) => {
+    const n = { ...opts, ...o };
+    setOpts(n);
+    save("opq-opts", JSON.stringify(n));
+    practiceWith(); // new round so the new setting applies cleanly
+  };
+
   useEffect(() => {
+    // Deep links: /?mode=endless&era=2010&type=endings (era links in the About section).
+    const p = new URLSearchParams(location.search);
+    const era = Number(p.get("era"));
+    const dec = (DECADES as readonly number[]).includes(era) ? era : 0;
+    const e = p.get("type") === "endings";
+    if (p.get("mode") === "endless" || dec || e) {
+      setDecade(dec);
+      setEd(e);
+      practiceWith(0, dec, e);
+      return;
+    }
     try {
       if (!localStorage.getItem("opq-seen")) {
         setModal("how");
         localStorage.setItem("opq-seen", "1");
       }
     } catch {}
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const next = (d: number = diff, dec: number = decade, e: boolean = ed) => {
-    setEndless(randomOpening(d, dec, e));
-    setRound((r) => r + 1);
-  };
-  // Pre-mount: render the masthead so the server HTML has the h1 (Play isn't mounted until day is set).
-  if (day === null) return <main className="game"><Masthead sub="Daily anime opening quiz" /></main>;
   const practice = !daily && arch === null;
-  const opening = daily ? openingFor(day) : arch !== null ? openingFor(arch) : endless ?? openingFor(day);
+  const opening = day === null ? null : daily ? openingFor(day) : arch !== null ? openingFor(arch) : endless ?? openingFor(day);
+  const sub =
+    day === null ? "Daily anime opening quiz" : daily ? `Daily anime opening #${puzzleNo(day)}` : arch !== null ? `Archive #${puzzleNo(arch)}` : `Endless ${ed ? "endings" : "openings"}`;
+  const goArchive = () => {
+    if (day === null) return;
+    setDaily(false);
+    setArch(arch ?? day - 1);
+  };
+  const modeTabs = [
+    { label: "Daily", on: daily, go: () => { setDaily(true); setArch(null); } },
+    { label: "Endless", on: practice, go: () => { setDaily(false); setArch(null); if (!endless) next(); } },
+    ...(day !== null && puzzleNo(day) > 1 ? [{ label: "Archive", on: !daily && arch !== null, go: goArchive }] : []),
+  ];
+  const pickDiff = (i: number) => {
+    setDiff(i as 0 | 1 | 2 | 3);
+    practiceWith(i, decade, ed);
+  };
+  const pickType = (e: boolean) => {
+    setEd(e);
+    practiceWith(diff, decade, e);
+  };
+  const menuItem = (label: string, go: () => void, extra?: string) => (
+    <button role="menuitem" onClick={() => { setMenu(false); go(); }}>
+      {label}
+      {extra && <span className="dim">{extra}</span>}
+    </button>
+  );
 
   return (
-    <>
-      <nav className="modes">
-        <button className="icon" onClick={() => setModal("how")} aria-label="How to play">?</button>
-        <button className={daily ? "on" : ""} onClick={() => { setDaily(true); setArch(null); }}>Daily</button>
-        <button className={practice ? "on" : ""} onClick={() => { setDaily(false); setArch(null); if (!endless) next(); }}>Endless</button>
-        {puzzleNo(day) > 1 && (
-          <button className={!daily && arch !== null ? "on" : ""} onClick={() => { setDaily(false); setArch(arch ?? day - 1); }}>Archive</button>
+    <div className={`shell ${optsOpen ? "opts-open" : ""}`} id="top">
+      <Scene />
+      <div className="cone" aria-hidden />
+      <div className="burger-wrap">
+        <button className="burger" aria-label="Menu" aria-expanded={menu} aria-haspopup="menu" onClick={() => setMenu(!menu)}>
+          <IMenu />
+        </button>
+        {menu && (
+          <>
+            <div className="menu-scrim" onClick={() => setMenu(false)} />
+            <div className="menu" role="menu">
+              {menuItem("How to play", () => setModal("how"))}
+              {menuItem("Stats", () => setModal("stats"))}
+              {cloudEnabled && menuItem("Friend leagues", () => setModal("leagues"))}
+              {cloudEnabled && menuItem(user ? "Account" : "Sign in", () => setModal("account"))}
+              {menuItem("Streamer mode", () => setStreamer(!streamer), streamer ? "On" : "Off")}
+            </div>
+          </>
         )}
-        <button className={`icon ${streamer ? "on" : ""}`} onClick={() => setStreamer(!streamer)} aria-label="Streamer mode" aria-pressed={streamer}>&#128250;</button>
-        <button className="icon" onClick={() => setModal("stats")} aria-label="Stats">&#9783;</button>
-        {cloudEnabled && <button className="icon" onClick={() => setModal("leagues")} aria-label="Friend leagues">&#128101;</button>}
-        {cloudEnabled && (
-          <button className={`icon ${user ? "on" : ""}`} onClick={() => setModal("account")} aria-label="Account">&#9786;</button>
-        )}
-      </nav>
+      </div>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
-      {modal === "stats" && <StatsModal user={user} day={day} isSupporter={isSupporter} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
+      {modal === "stats" && day !== null && <StatsModal user={user} day={day} isSupporter={isSupporter} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
       {modal === "account" && <AccountModal user={user} onClose={() => { setModal(null); setAccountHint(""); }} isSupporter={isSupporter} theme={theme} onPick={setTheme} hint={accountHint} />}
       {modal === "leagues" && <Leagues user={user} onClose={() => setModal(null)} />}
-      {!daily && arch !== null && isSupporter && (
-        <div className="opts">
-          <span>Puzzle</span>
-          <select value={arch} onChange={(e) => setArch(Number(e.target.value))} aria-label="Past puzzle">
-            {Array.from({ length: puzzleNo(day) - 1 }, (_, i) => day - 1 - i).map((d) => (
-              <option key={d} value={d}>#{puzzleNo(d)}</option>
+
+      <aside className="side left" aria-label="Song filters">
+        <div className="grp">
+          <label className="lab" htmlFor="f-type">
+            Type <span className="new">New</span>
+          </label>
+          <div className="sel warm">
+            <IMic />
+            <select id="f-type" value={ed ? "ed" : "op"} onChange={(e) => pickType(e.target.value === "ed")}>
+              <option value="op">Openings</option>
+              <option value="ed">Endings</option>
+            </select>
+            <IChev />
+          </div>
+        </div>
+        <div className="grp">
+          <label className="lab" htmlFor="f-era">Era</label>
+          <div className="sel">
+            <IGrid />
+            <select id="f-era" value={decade} onChange={(e) => { const v = Number(e.target.value); setDecade(v); practiceWith(diff, v, ed); }}>
+              {DECADES.map((d) => (
+                <option key={d} value={d}>{d === 0 ? "Any era" : d === 1990 ? "Classic (≤1990s)" : `${d}s`}</option>
+              ))}
+            </select>
+            <IChev />
+          </div>
+        </div>
+        <hr />
+        <div className="grp diff-list">
+          <span className="lab">Difficulty</span>
+          <div className="stack">
+            {DIFFS.map((l, i) => (
+              <button key={l} className={`item ${diff === i ? "on" : ""}`} aria-pressed={diff === i} onClick={() => pickDiff(i)}>
+                {l}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
-      )}
-      {practice && (
-        <div className="opts">
-          <span>Type</span>
-          {([false, true] as const).map((e) => (
-            <button key={String(e)} className={ed === e ? "on" : ""} onClick={() => { setEd(e); next(diff, decade, e); }}>{e ? "Endings" : "Openings"}</button>
-          ))}
-          <span>Era</span>
-          <select value={decade} onChange={(e) => { setDecade(Number(e.target.value)); next(diff, Number(e.target.value), ed); }} aria-label="Decade">
-            {DECADES.map((d) => (
-              <option key={d} value={d}>{d === 0 ? "All" : d === 1990 ? "≤1990s" : `${d}s`}</option>
+        <hr />
+        <button className="reroll" onClick={() => practiceWith()}>
+          <IReroll /> New song
+        </button>
+      </aside>
+
+      <main className="game">
+        <Masthead sub={sub} />
+        <div className="tabs">
+          <button className="swap" onClick={() => pickType(!ed)} aria-label={ed ? "Switch to openings" : "Switch to endings"} title={ed ? "Switch to openings" : "Switch to endings"}>
+            <ISwap />
+          </button>
+          <div className="tablist">
+            {modeTabs.map((t) => (
+              <button key={t.label} className={t.on ? "on" : ""} aria-pressed={t.on} onClick={t.go}>
+                {t.label}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
-      )}
-      {practice && (
-        <div className="diffs">
-          {(["All", "Easy", "Medium", "Hard"] as const).map((l, i) => (
-            <button key={l} className={`d${i} ${diff === i ? "on" : ""}`} onClick={() => { setDiff(i as 0 | 1 | 2 | 3); next(i, decade, ed); }}>{l}</button>
-          ))}
-        </div>
-      )}
-      {practice && (
-        <div className="opts">
-          <span>Start at</span>
-          {["0.05", "0.1", "0.5", "2"].map((k) => (
-            <button key={k} className={opts.start === k ? "on" : ""} onClick={() => setOpt({ start: k })}>
-              {k}s{k === "0.05" ? " (hard)" : ""}
+        <div className="pills">
+          {DIFFS.map((l, i) => (
+            <button key={l} className={`d${i} ${diff === i ? "on" : ""}`} aria-pressed={diff === i} onClick={() => pickDiff(i)}>
+              {l}
             </button>
           ))}
-          <span>From</span>
-          <button className={!opts.random ? "on" : ""} onClick={() => setOpt({ random: false })}>
-            Intro
-          </button>
-          <button className={opts.random ? "on" : ""} onClick={() => setOpt({ random: true })}>
-            Random
-          </button>
         </div>
-      )}
-      {arch !== null && !isSupporter ? (
-        <ArchiveLocked loading={supLoading} onSignIn={() => { setAccountHint("Sign in to become a Supporter."); setModal("account"); }} />
-      ) : (
-        <Play
-          key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
-          day={arch ?? day}
-          opening={opening}
-          daily={daily}
-          archive={arch !== null}
-          clips={practice ? SCHEDULES[opts.start] : CLIPS}
-          random={practice && opts.random}
-          onNext={() => next()}
-        />
-      )}
-    </>
+        {!daily && arch !== null && isSupporter && day !== null && (
+          <div className="opts">
+            <span>Puzzle</span>
+            <select value={arch} onChange={(e) => setArch(Number(e.target.value))} aria-label="Past puzzle">
+              {Array.from({ length: puzzleNo(day) - 1 }, (_, i) => day - 1 - i).map((d) => (
+                <option key={d} value={d}>#{puzzleNo(d)}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {day === null || !opening ? (
+          <Skeleton />
+        ) : arch !== null && !isSupporter ? (
+          <ArchiveLocked loading={supLoading} onSignIn={() => { setAccountHint("Sign in to become a Supporter."); setModal("account"); }} />
+        ) : (
+          <Play
+            key={daily ? "daily" : arch !== null ? `a${arch}` : `e${round}`}
+            day={arch ?? day}
+            opening={opening}
+            daily={daily}
+            archive={arch !== null}
+            clips={practice ? SCHEDULES[opts.start] : CLIPS}
+            random={practice && opts.random}
+            covers={covers}
+            onNext={() => next()}
+          />
+        )}
+        <section className="more" aria-label="More ways to play">
+          <div className="cards">
+            <button className="card" onClick={() => pickType(false)}>
+              <b>Endless</b>
+              <span>Openings back to back</span>
+            </button>
+            <button className="card hot" onClick={() => pickType(true)}>
+              <b>Endings</b>
+              <span>Name it from the outro</span>
+              <em className="ribbon">New</em>
+            </button>
+            <button className="card" onClick={goArchive}>
+              <b>Archive</b>
+              <span>Every past daily</span>
+            </button>
+          </div>
+          <p className="lab center">More ways to play</p>
+          <button className="opts-btn" aria-expanded={optsOpen} onClick={() => setOptsOpen(!optsOpen)}>
+            {optsOpen ? "Hide game options" : "Game options"} <IChev />
+          </button>
+        </section>
+      </main>
+
+      <aside className="side right" aria-label="Playback options">
+        <div className="grp">
+          <span className="lab">Playback</span>
+          <div className="stack">
+            <button className={`item sm ${!opts.random ? "on" : ""}`} aria-pressed={!opts.random} onClick={() => setOpt({ random: false })}>
+              <IPlayLine /> From the intro
+            </button>
+            <button className={`item sm ${opts.random ? "on" : ""}`} aria-pressed={opts.random} onClick={() => setOpt({ random: true })}>
+              <IShuffle /> Random spot
+            </button>
+          </div>
+        </div>
+        <hr />
+        <div className="grp">
+          <span className="lab">Search</span>
+          <div className="row-card">
+            <ISearch />
+            <span>Show covers</span>
+            <Toggle on={covers} label="Show cover art in search" onClick={() => { setCovers(!covers); save("opq-covers", covers ? "0" : "1"); }} />
+          </div>
+        </div>
+        <hr />
+        <div className="grp">
+          <span className="lab">First clip</span>
+          <div className="chips">
+            {Object.keys(SCHEDULES)
+              .sort((a, b) => Number(a) - Number(b))
+              .map((k) => (
+                <button key={k} className={opts.start === k ? "on" : ""} aria-pressed={opts.start === k} onClick={() => setOpt({ start: k })}>
+                  {k}s
+                </button>
+              ))}
+          </div>
+        </div>
+        <hr />
+        <div className="grp">
+          <label className="lab" htmlFor="f-vol">Volume</label>
+          <input
+            id="f-vol"
+            className="vol"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={vol}
+            style={{ "--v": `${vol * 100}%` } as React.CSSProperties}
+            onChange={(e) => { const v = Number(e.target.value); setVol(v); save("opq-vol", String(v)); }}
+          />
+        </div>
+        <hr />
+        <details className="uiopts">
+          <summary>
+            UI options <span className="new">New</span>
+            <IChev />
+          </summary>
+          <div className="row-card">
+            <INote />
+            <span>Streamer mode</span>
+            <Toggle on={streamer} label="Streamer mode" onClick={() => setStreamer(!streamer)} />
+          </div>
+          {cloudEnabled && (
+            <button className="item sm" onClick={() => setModal("account")}>
+              Colour themes
+            </button>
+          )}
+        </details>
+      </aside>
+
+      <nav className="foot" aria-label="Site">
+        <a href="#eras">Eras</a>
+        <a href="#how">How to play</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
   );
 }
+
+// Same footprint as the play area, so the layout doesn't jump when the game mounts.
+const Skeleton = () => (
+  <>
+    <div className="track" aria-hidden />
+    <div className="playrow">
+      <button className="play" disabled aria-label="Loading">
+        <IPlay />
+      </button>
+    </div>
+    <div className="row">
+      <div className="field">
+        <ISearch />
+        <input disabled placeholder="Name that anime" aria-label="Guess the anime" />
+      </div>
+    </div>
+  </>
+);
 
 // Archive is a Supporter perk. Daily, stats and sharing stay free.
 function ArchiveLocked({ loading, onSignIn }: { loading: boolean; onSignIn: () => void }) {
@@ -209,7 +419,7 @@ function ArchiveLocked({ loading, onSignIn }: { loading: boolean; onSignIn: () =
   const [err, setErr] = useState("");
   if (loading) return <p className="opts">Checking Supporter status…</p>;
   return (
-    <div className="opts">
+    <div className="opts locked">
       <p>Past puzzles are a Supporter perk. Daily, stats and sharing stay free.</p>
       <button
         className="primary"
@@ -229,7 +439,7 @@ function ArchiveLocked({ loading, onSignIn }: { loading: boolean; onSignIn: () =
   );
 }
 
-function Play({ day, opening, daily, archive, clips, random, onNext }: { day: number; opening: Opening; daily: boolean; archive: boolean; clips: readonly number[]; random: boolean; onNext: () => void }) {
+function Play({ day, opening, daily, archive, clips, random, covers, onNext }: { day: number; opening: Opening; daily: boolean; archive: boolean; clips: readonly number[]; random: boolean; covers: boolean; onNext: () => void }) {
   const [offset, setOffset] = useState(opening.startOffset);
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [ready, setReady] = useState(false);
@@ -285,6 +495,8 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
 
   const step = Math.min(guesses.length, clips.length - 1);
   const clip = clips[step];
+  // Square-root scale: 0.1s still gets a visible slice of the bar.
+  const pos = (c: number) => Math.sqrt(c / clips[clips.length - 1]) * 100;
 
   const matches = useMemo(() => {
     const n = clean(q);
@@ -326,55 +538,51 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
     } catch {}
   };
 
-  if (!ready) return <main className="game"><Masthead sub={daily ? "Daily anime opening quiz" : archive ? "Archive" : "Endless practice"} /></main>;
+  if (!ready) return <Skeleton />;
 
   return (
-    <main className="game">
-      <header>
-        <h1>
-          kikoe<span>.io</span>
-        </h1>
-        <p>{daily ? `Daily anime opening #${puzzleNo(day)}` : archive ? `Archive #${puzzleNo(day)}` : "Endless practice"}</p>
-      </header>
-
-      <ol className="bar" aria-label="Clip lengths">
-        {clips.map((c, i) => (
-          <li
-            key={c}
-            className={i < guesses.length ? (guesses[i].kind === "correct" ? "ok" : "miss") : i === step && !done ? "now" : ""}
-          >
-            {c}s
-          </li>
-        ))}
-      </ol>
+    <>
+      <div className="trackwrap">
+        <ol className="track" aria-label={`Clip ${step + 1} of ${clips.length}: ${clip} seconds`}>
+          {clips.map((c, i) => {
+            const from = i ? pos(clips[i - 1]) : 0;
+            const g = guesses[i];
+            return (
+              <li
+                key={c}
+                className={g ? (g.kind === "correct" ? "ok" : "miss") : i <= step && !done ? "open" : ""}
+                style={{ left: `${from}%`, width: `${pos(c) - from}%` }}
+              />
+            );
+          })}
+          {playing && <i key={guesses.length} style={{ width: `${pos(clip)}%`, animationDuration: `${clip}s` }} />}
+        </ol>
+        {!done && (
+          <span className="mark" style={{ left: `${pos(clip)}%` }}>
+            {clip}s
+          </span>
+        )}
+      </div>
 
       {!done && (
-        <div className="track" aria-hidden>
-          <div className="open" style={{ width: `${Math.max((clip / clips[clips.length - 1]) * 100, 3)}%` }}>
-            {playing && <i key={guesses.length + String(playing)} style={{ animationDuration: `${clip}s` }} />}
-          </div>
+        <div className="playrow">
+          <button className={`play ${playing ? "is-on" : ""}`} onClick={() => toggle(clip)} disabled={!buf} aria-label={playing ? "Stop" : `Play ${clip} seconds`}>
+            {playing ? <IStop /> : <IPlay />}
+          </button>
+          <span className="secs">{clip}s</span>
         </div>
       )}
 
-      {!done && (
-        <button className="play" onClick={() => toggle(clip)} disabled={!buf} aria-label={playing ? "Stop" : `Play ${clip} seconds`}>
-          {playing ? "■" : buf ? "▶" : "…"}
-          <small>{buf ? `${clip}s clip` : err ? "error" : "loading"}</small>
-        </button>
+      {guesses.length > 0 && (
+        <ul className="log">
+          {guesses.map((g, i) => (
+            <li key={i} className={g.kind}>
+              <span className="n">{clips[i]}s</span>
+              {g.kind === "skip" ? "Skipped" : g.text}
+            </li>
+          ))}
+        </ul>
       )}
-      {err && (
-        <p className="err" role="alert">
-          {err}
-        </p>
-      )}
-
-      <ul className="log">
-        {guesses.map((g, i) => (
-          <li key={i} className={g.kind}>
-            {g.kind === "skip" ? "Skipped" : g.text}
-          </li>
-        ))}
-      </ul>
 
       {!done ? (
         <div className="guess">
@@ -392,38 +600,50 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m[1]} alt="" width={28} height={40} loading="lazy" />
+                  {covers && <img src={m[1]} alt="" width={28} height={40} loading="lazy" />}
                   <span>{m[0]}</span>
                 </li>
               ))}
             </ul>
           )}
           <div className="row">
-            <input
-              ref={input}
-              value={q}
-              placeholder="Name that anime…"
-              aria-label="Guess the anime"
-              autoComplete="off"
-              spellCheck={false}
-              onChange={(e) => {
-                setQ(e.target.value);
-                setPick(0);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setPick((p) => Math.min(p + 1, matches.length - 1));
-                } else if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setPick((p) => Math.max(p - 1, 0));
-                } else if (e.key === "Enter" && matches[pick]) submit(matches[pick][0]);
-              }}
-            />
+            <div className="field">
+              <ISearch />
+              <input
+                ref={input}
+                value={q}
+                placeholder="Name that anime"
+                aria-label="Guess the anime"
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setPick(0);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setPick((p) => Math.min(p + 1, matches.length - 1));
+                  } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setPick((p) => Math.max(p - 1, 0));
+                  } else if (e.key === "Enter" && matches[pick]) submit(matches[pick][0]);
+                }}
+              />
+            </div>
             <button className="skip" onClick={() => submit("", "skip")}>
-              Skip{step < clips.length - 1 ? ` +${clips[step + 1]}s` : ""}
+              <ISkip />
+              {step < clips.length - 1 ? `Skip +${clips[step + 1]}s` : "Give up"}
             </button>
           </div>
+          {err && (
+            <p className="err" role="alert">
+              {err}{" "}
+              <button className="link" onClick={() => location.reload()}>
+                Reload
+              </button>
+            </p>
+          )}
         </div>
       ) : (
         <section className="result">
@@ -446,7 +666,11 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
             <button className="primary" onClick={share}>
               {copied ? "Copied!" : "Share"}
             </button>
-            {!daily && !archive && <button className="primary" onClick={onNext}>Next song</button>}
+            {!daily && !archive && (
+              <button className="primary" onClick={onNext}>
+                Next song
+              </button>
+            )}
             {meta && (
               <a href={meta.link} target="_blank" rel="noreferrer">
                 Apple Music ↗
@@ -460,6 +684,6 @@ function Play({ day, opening, daily, archive, clips, random, onNext }: { day: nu
           )}
         </section>
       )}
-    </main>
+    </>
   );
 }
