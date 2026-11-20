@@ -112,7 +112,7 @@ All browser games go into one hub: one Next.js app, each game on its own route, 
 - [ ] Shared Supabase: likely this project. `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table. Write as a new migration; never edit applied ones.
 - [ ] Split shared code (auth/Account dialog, stats modal, share, countdown, Supporter, themes) from OP Quiz-only code.
 - [ ] Hub-wide or per-game Supporter tier.
-- [ ] Domain: kikoe.io is this game's name; hub name/domain not decided. SEO items above assume kikoe.io and may change.
+- [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet). kikoe.io stays this game's name. SEO items above assume kikoe.io and should move to hibidle.com. Do not switch the live domain or Razorpay website entry until Razorpay verification of the current Vercel URL is done.
 
 ## Open questions
 
