@@ -3,6 +3,7 @@
 // so setState-in-effect is intentional here.
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, poster, puzzleNo, shareText, todayNum, won, type Guess, type Meta } from "@/games/op-quiz/game";
 import { OPENINGS, type Opening } from "@/data/openings";
 import { ENDINGS } from "@/data/endings";
@@ -67,6 +68,7 @@ const Toggle = ({ on, onClick, label }: { on: boolean; onClick: () => void; labe
 );
 
 export default function Game() {
+  const router = useRouter();
   // Date.now() can't run during prerender, so read the day after mount.
   const [day, setDay] = useState<number | null>(null);
   useEffect(() => setDay(todayNum()), []);
@@ -191,7 +193,7 @@ export default function Game() {
           <>
             <div className="menu-scrim" onClick={() => setMenu(false)} />
             <div className="menu" role="menu">
-              {menuItem("Hibidle home", () => { location.href = "/"; })}
+              {menuItem("Hibidle home", () => router.push("/"))}
               {menuItem("How to play", () => setModal("how"))}
               {menuItem("Stats", () => setModal("stats"))}
               {cloudEnabled && menuItem("Friend leagues", () => setModal("leagues"))}

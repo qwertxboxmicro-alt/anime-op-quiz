@@ -20,6 +20,7 @@ export function HeroHud() {
   useEffect(() => {
     const tick = () => setLeft(DAY - (Date.now() % DAY));
     tick();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after mount to avoid a hydration mismatch
     setStreak(readStats().streak);
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);

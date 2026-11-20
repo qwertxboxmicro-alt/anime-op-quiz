@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude worktrees and cook run state are not part of the app.
+    ".claude/**",
+    "cook/**",
   ]),
 ]);
 
