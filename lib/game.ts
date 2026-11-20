@@ -34,7 +34,7 @@ export function shareText(day: number, g: Guess[], daily = true, clips: readonly
     return !x ? "⬛" : x.kind === "correct" ? "🟩" : x.kind === "skip" ? "⬜" : "🟥";
   }).join("");
   const at = g.findIndex((x) => x.kind === "correct");
-  return `🎵 OP Quiz ${daily ? `#${puzzleNo(day)}` : "(endless)"} ${at >= 0 ? `${clips[at]}s` : "X"} ${sq}\n${location.origin}`;
+  return `🎵 kikoe ${daily ? `#${puzzleNo(day)}` : "(endless)"} ${at >= 0 ? `${clips[at]}s` : "X"} ${sq}\n${location.origin}`;
 }
 
 export type Meta = { previewUrl: string; art: string; link: string };

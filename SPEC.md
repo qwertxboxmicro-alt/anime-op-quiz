@@ -1,13 +1,13 @@
 # Anime Opening Quiz — Spec
 
-kikoe.io. Daily web game: hear a tiny clip of an anime opening, guess the anime. Clip grows each miss.
+kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny clip of an anime opening, guess the anime. Clip grows each miss.
 
 ## Why this
 
 - "Guess the song in 0.1 seconds" Shorts are hot (e.g. squareheads Short: 288K views in 6 days, Nov 2026).
 - "anime opening quiz" YouTube searches: ~41K/mo, +82% growth (vidIQ, Nov 2026). "anime quiz": ~232K/mo, +30%.
 - Krillion (rare-answer trivia) grew via creators playing it on camera. Same plan here: streamer-friendly, Shorts-friendly.
-- Competition: an older "Anime Heardle" exists, looks stale. No 0.1-second version found.
+- Competition (updated 2026-11-20 from `../browser-game-research/RESEARCH.md`): AniGuessr (live since April 2023, daily opening mode but full ~90s track, loyal players); Songspot/Songless (0.1s, general music); Music Quizly (0.1s, has an 86-track anime playlist); Anime Music Quiz (multiplayer, unchecked). The gap left is a dedicated daily anime-opening site with a sub-second ladder.
 
 ## Core loop (MVP)
 
@@ -16,7 +16,7 @@ kikoe.io. Daily web game: hear a tiny clip of an anime opening, guess the anime.
 - [x] Player guesses the **anime title** (not song title). Skip button = counts as a miss. _Code: `submit("", "skip")` adds a guess in `Game.tsx`._
 - [x] Autocomplete over a list of anime titles (English + romaji). _Code: matches title + alt terms from `public/anime.json` (alts include romaji); not checked how complete the list is._
 - [x] Win/lose screen: anime, song, artist, cover art, link to Apple Music. _Code: result section in `Game.tsx`._
-- [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `lib/game.ts`; format is `🎵 OP Quiz #N 0.5s <squares>` + origin; skips show ⬜._
+- [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `lib/game.ts`; format is `🎵 kikoe #N 0.5s <squares>` + origin (was `OP Quiz` until 2026-11-20); skips show ⬜._
 - [x] One play per day per device (localStorage). _Code: `opq-v1` restores today's guesses. Accounts were added later (optional)._
 - [x] Countdown to next puzzle. _Code: `useCountdown` + `msToNext` (UTC midnight)._
 
@@ -99,8 +99,8 @@ Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
 
 - [ ] Homepage SSRs an empty body (`Game.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
 - [ ] Add `app/robots.ts` and `app/sitemap.ts` (`/`, `/privacy`, `/terms`); both 404 today.
-- [ ] Add `metadataBase` + canonical in `layout.tsx` (use `kikoe.io`).
-- [ ] Domain `kikoe.io` not live: attach in Vercel, 301 the `*.vercel.app` host, add to Search Console.
+- [ ] Add `metadataBase` + canonical in `layout.tsx` (use `hibidle.com`).
+- [ ] Domain `hibidle.com`: buy, then (only after Razorpay approval) attach in Vercel, 301 the `*.vercel.app` host, add to Search Console. See `docs/domain-setup.md`.
 - [ ] Retitle/description around "anime opening quiz"; add `WebSite` + `VideoGame` JSON-LD.
 - [ ] Later: archive pages (no answers in HTML), backlinks (r/anime, Product Hunt), optional `llms.txt`.
 
@@ -112,10 +112,10 @@ All browser games go into one hub: one Next.js app, each game on its own route, 
 - [ ] Shared Supabase: likely this project. `results(user_id, day, won, tries)` has no game column; add `game` (and to the PK, `global_day_stats`, leagues, streak freezes) or give each game its own table. Write as a new migration; never edit applied ones.
 - [ ] Split shared code (auth/Account dialog, stats modal, share, countdown, Supporter, themes) from OP Quiz-only code.
 - [ ] Hub-wide or per-game Supporter tier.
-- [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet). kikoe.io stays this game's name. SEO items above assume kikoe.io and should move to hibidle.com. Do not switch the live domain or Razorpay website entry until Razorpay verification of the current Vercel URL is done.
+- [x] Hub name: **Hibidle**, `hibidle.com` (decided 2026-11-20, not bought yet; .com only for now). `kikoe.io` will not be bought; kikoe stays this game's name. Do not switch the live domain or Razorpay website entry until Razorpay verification of the current Vercel URL is done.
 
 ## Open questions
 
-- [x] Name: **kikoe.io** (decided 2026-11-20). Code rename done (text only; npm/repo/Supabase/Vercel ids and `opq-v1` unchanged). Discord app renamed. Still to do: buy/point the domain, rename the Razorpay plan, add the domain to Supabase redirect allow-list, Vercel domains, Turnstile widget hostname and the Razorpay website.
+- [x] Name: **kikoe.io** (decided 2026-11-20). Code rename done (text only; npm/repo/Supabase/Vercel ids and `opq-v1` unchanged; share text renamed 2026-11-20). Discord app renamed. **The kikoe.io domain will not be bought (decided 2026-11-20)**: domain work moves to `hibidle.com` (see Game hub). Still to do: rename the Razorpay plan; drop the `.io` from the in-game name text.
 - [ ] Guess the anime only, or bonus point for song title?
 - [x] Which ~60 openings for launch? 60 in `data/openings.ts` (2026-11-18); start offsets are heuristic, not checked by ear. Owner to review the picks.

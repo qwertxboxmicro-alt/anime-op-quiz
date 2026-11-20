@@ -1,5 +1,7 @@
 # SEO audit + plan: kikoe.io (2026-11-20)
 
+**Update 2026-11-20:** the domain is the game hub's, `hibidle.com`; `kikoe.io` will not be bought. Where this audit says kikoe.io as a domain, use hibidle.com (OP Quiz will sit at `/op-quiz` in the hub). Domain cut-over waits for Razorpay approval (see `domain-setup.md`).
+
 Scope: live `anime-op-quiz-alpha.vercel.app` + code in `app/`, `next.config.ts`. Method: curl probes + source read. Not run: Lighthouse/CWV, backlinks, GSC (no credentials).
 
 Health score (rough): **~38/100**. Type: browser game / web app (no content pages).
@@ -28,10 +30,10 @@ Works already: HTTPS + HSTS, strong security headers/CSP, OG + Twitter card with
 1. **SSR a real shell.** In `Game.tsx`, stop returning `null` before mount. Render `<main><header><h1>kikoe.io</h1><p>…</p></header>` always; gate only the interactive/daily-dependent parts on `ready`. Add a short static intro block (what it is, how to play, 3 sentences) below the game.
 2. Add `app/robots.ts`: allow `/`, disallow `/api/`, point to sitemap.
 3. Add `app/sitemap.ts`: `/`, `/privacy`, `/terms`.
-4. Add `metadataBase: new URL("https://kikoe.io")` (use env `NEXT_PUBLIC_SITE_URL`, fall back to vercel URL) + `alternates: { canonical: "/" }` in `layout.tsx`.
+4. Add `metadataBase: new URL("https://hibidle.com")` (use env `NEXT_PUBLIC_SITE_URL`, fall back to vercel URL) + `alternates: { canonical: "/" }` in `layout.tsx`.
 
 ### Phase 2: domain (needs you)
-5. Buy/attach `kikoe.io` per `docs/domain-setup.md`; 301 the `*.vercel.app` host to it; add property in Google Search Console and submit the sitemap.
+5. Buy/attach `hibidle.com` per `docs/domain-setup.md` (after Razorpay approval); 301 the `*.vercel.app` host to it; add property in Google Search Console and submit the sitemap.
 
 ### Phase 3: on-page + schema (~1h)
 6. Retitle: `Anime opening quiz: guess the anime in 0.1 seconds | kikoe.io`. Description: lead with "daily anime opening quiz".
