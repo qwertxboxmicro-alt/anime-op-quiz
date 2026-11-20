@@ -80,3 +80,42 @@ cleanup: 5 users deleted, 0 leftover rows for day 79990
 ```
 Win shape matches code: `Game.tsx` pushes `{day, won: won(guesses), tries: guesses.length}`; constraints (`tries 1..6`, `won or tries=6`) accept it. No app bug found, no code changed.
 Blocked: `public.global_day_stats` (migration `0003_global_stats.sql`) is **not applied on the live project**, so the aggregate read of win rows was not verified (the app degrades to null, by design). After 0003 is applied, re-run the aggregate checks: with 5 rows on one day expect `played=5, wins=4, dist=[1,1,1,0,0,1]`; with 4 rows expect no row (k>=5 hiding); anon call returns no `user_id`.
+
+## 9. `global_day_stats` end to end (2026-11-20): PASS
+Scratch script in the scratchpad (not committed). Service key from `.env.local` only, for 5 confirmed throwaway users (`opq-rpctest-*@example.invalid`), signed in via admin `generate_link` + `/auth/v1/verify` (no email sent). Each user inserted one row with the anon key on test days 79991 (5 rows) and 79992 (4 rows). Users deleted after.
+```
+PASS anon RPC status 200
+PASS anon 5 rows -> played=5 wins=4 dist=[1,1,1,0,0,1]
+PASS anon response keys are only played, wins, dist (no user_id)
+PASS authenticated RPC returns the same aggregate
+PASS anon 4 rows -> empty result (k>=5 hiding)
+PASS empty day -> empty result
+cleanup: 5 users deleted, 0 leftover result rows
+```
+This closes the §8 FAIL (PGRST202): the function is now in the live schema. Note: `Game.tsx` only calls `fetchGlobalDay` for the stats line; the anon call is what the browser makes.
+
+## 10. Returning-user session, no email (2026-11-20): PARTIAL
+Email path NOT used (0 emails sent; the 2/hour budget untouched). Scratch script: admin `generate_link` (magiclink) for a throwaway user, then the same flow a returning user's session uses:
+```
+PASS admin generate_link returns hashed_token (no email sent)
+PASS first sign-in via link returns session (verify 200)
+PASS same link reused is rejected (one-time)
+PASS refresh_token grant issues a new access token
+PASS refreshed token resolves to the same user (/auth/v1/user)
+INFO reusing the already-rotated refresh token returned 200 (Supabase reuse window; not a failure)
+cleanup: user delete 200
+```
+Still NOT tested: the real emailed link arriving and the sign-in button path for a returning user. Blocker found: **password sign-in is now blocked by Turnstile** (`captcha_failed: no captcha_token found`). So `scripts/security-test.mjs` two-user checks (password signup) cannot run on the live project any more. Use the admin-link method from §6 or add a captcha-free path before re-running it.
+
+## 11. Account dialog delete click-through, local (2026-11-20): PASS
+`npm run dev` on port 3123 with `.env.local` values. Throwaway user (`opq-ui-*@example.invalid`), signed in by opening its verify link in the browser and storing the session.
+- Account dialog shows "Signed in as <throwaway email>", Sign out, Delete account.
+- Delete account -> type `DELETE` -> Permanently delete. Dev log: `POST /api/delete-account 200`. Page reloaded.
+- After: admin get user -> 404; `results` rows for that user -> 0 (the user had none; cascade not re-proven here, §7 covers it).
+- Local storage: auth key removed; `opq-v1`, `opq-seen`, `opq-streamer` present again. The app writes them back on reload, so the modal's wipe is not visible after reload. Expected from init order, not verified as a bug.
+Observed, not a failure: the browser was opened on `localhost:3123`, but Supabase's `redirect_to` fell back to the production site URL (`localhost:3123` is not on the allow-list). The first session landed on the production origin and was removed from that origin's localStorage right away. Test users only. Dev sign-in needs `localhost:3000` (allow-listed) or a new allow-list entry; not changed here.
+Not done: the Turnstile widget did not render on localhost (no site key for localhost in Cloudflare); this test bypassed the sign-in form, not the Turnstile check.
+
+## Blockers this run
+- Password sign-in is captcha-protected (see §10). The RLS script needs a rewrite before re-run.
+- Strix: see `docs/work-log/quiz-strix.md`, "Re-run 2026-11-20".

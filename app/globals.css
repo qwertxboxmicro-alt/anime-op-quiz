@@ -103,3 +103,14 @@ html.streamer { font-size: 22px; }
 .streamer .game, .streamer .modes { max-width: 900px; }
 .streamer .sugg img { display: none; }
 .streamer .reveal:not(:hover) { filter: blur(16px); }
+
+/* Supporter themes (lib/themes.ts). Default = :root above. */
+html[data-theme="ember"] { --bg: #0d0706; --card: #181009; --line: #3a2418; --text: #f7ece6; --dim: #b49a8c; --accent: #ff8a3d; --miss: #ef4444; }
+html[data-theme="ocean"] { --bg: #050a12; --card: #0b1624; --line: #1c2e45; --text: #e6f0fb; --dim: #8aa0b8; --accent: #38bdf8; --miss: #f43f5e; }
+html[data-theme="violet"] { --bg: #09060f; --card: #130e1f; --line: #2a1f40; --text: #f1ecfb; --dim: #9d8fbc; --accent: #c084fc; --miss: #f43f5e; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #04140a; font-size: .7rem; font-weight: 700; vertical-align: middle; }
+.themes { display: flex; flex-direction: column; gap: 8px; }
+.swatches { display: flex; gap: 8px; }
+.swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line); font-size: .7rem; }
+.swatch.on { outline: 2px solid var(--text); outline-offset: 2px; }
+.upgrade { display: flex; flex-direction: column; gap: 8px; }
