@@ -7,11 +7,14 @@ import { startSupporterCheckout } from "@/lib/useSupporter";
 export function ThemePicker({ isSupporter, theme, onPick }: { isSupporter: boolean; theme: ThemeId; onPick: (id: ThemeId) => void }) {
   const [locked, setLocked] = useState(false);
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  // Busy guard: a double click would otherwise create two Razorpay subscriptions (no supporters row exists until the webhook lands).
   const upgrade = async () => {
+    setBusy(true);
     const r = await startSupporterCheckout();
-    if (r.url) window.location.href = r.url;
-    else if (r.needsSignIn) setErr("Sign in to become a Supporter.");
-    else setErr(r.error ?? "Could not start subscription.");
+    if (r.url) { window.location.href = r.url; return; }
+    setErr(r.needsSignIn ? "Sign in to become a Supporter." : r.error ?? "Could not start subscription.");
+    setBusy(false);
   };
   return (
     <div className="themes">
@@ -37,7 +40,7 @@ export function ThemePicker({ isSupporter, theme, onPick }: { isSupporter: boole
       {locked && !isSupporter && (
         <div className="upgrade">
           <p className="how">Supporter themes are locked. Support the game to unlock them.</p>
-          <button className="primary" onClick={upgrade}>Become a Supporter</button>
+          <button className="primary" disabled={busy} onClick={upgrade}>Become a Supporter</button>
           {err && <p className="how" role="alert">{err}</p>}
         </div>
       )}
