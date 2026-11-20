@@ -156,9 +156,13 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = (y * w + x) * 3;
     const dx = (x / w - 0.5) * 2, dy = (y / h - 0.45) * 2;
-    const v = Math.max(0, Math.hypot(dx * 0.85, dy * 0.7) - 0.75) * 0.9;
-    const dark = v > dither(x, y) * 0.5 ? 0.78 : 1;
+    // Two-step dithered vignette (darker toward the corners).
+    const v = Math.max(0, Math.hypot(dx * 0.85, dy * 0.75) - 0.62);
+    const dark = v * 1.6 > dither(x, y) + 0.45 ? 0.68 : v * 1.6 > dither(x, y) ? 0.84 : 1;
     let r = dark, g = dark, b = dark;
+    // Warm bloom spilling from the sun: lifts and warms nearby pixels (dithered falloff).
+    const bd = Math.hypot((x - sx) / (w * 0.32), (y - sy) / (h * 0.55));
+    if (bd < 1 && (1 - bd) * 0.9 > dither(x, y)) { r *= 1.1; g *= 1.06; b *= 0.94; }
     if (mood === "dusk") {
       const k = y / h;
       r *= 0.7 + k * 0.22; g *= 0.5 + k * 0.14; b *= 0.82 + k * 0.05;
