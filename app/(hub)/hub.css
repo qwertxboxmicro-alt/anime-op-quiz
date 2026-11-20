@@ -4,6 +4,7 @@
   --bg: #0b1420; --rail: #070e17; --panel: #12203a; --panel2: #192b48; --line: #26395c; --text: #eef4fb; --dim: #8fa3bf; --soft: #c4d2e4;
   --pink: #ff4f7b; --pink-d: #c4345a; --cyan: #4fe3f0; --amber: #ffd24a; --green: #7cc35a;
   --notch: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
+  --notch-s: polygon(0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px));
   --scan: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px);
   --edge: inset 0 0 0 2px #2c4874, inset 0 4px 0 #4fe3f024, inset 0 -5px 0 #00000066;
   min-height: 100dvh; color: var(--text);
@@ -134,3 +135,6 @@ a.h-h2:hover { color: var(--cyan); }
   .h-fav svg { width: 58px; height: 58px; }
 }
 @media (prefers-reduced-motion: reduce) { .hub * { transition: none !important; } }
+
+/* Small elements get the small notch, or the 8px steps eat them. */
+.hub .h-chip, .hub .h-badge, .hub .h-unread, .hub .h-playing { clip-path: var(--notch-s); }

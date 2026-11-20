@@ -19,9 +19,8 @@ const mode = (i: number, kind: Kind): Item => {
   const m = MODES[i];
   return { key: m.id, name: m.name, meta: m.meta, href: m.href, scene: "op-quiz", variant: m.variant, kind };
 };
-const kikoe = GAMES.find((g) => g.status === "live")!;
 const SHELVES: { title: string; icon: IconName; ranked?: boolean; items: Item[] }[] = [
-  { title: "Play today", icon: "play", ranked: true, items: [mode(0, "daily"), mode(1, "endless"), { key: kikoe.id, name: kikoe.name, meta: kikoe.genre + " · Daily", href: kikoe.route, scene: kikoe.thumb, kind: "daily" }] },
+  { title: "Play today", icon: "play", ranked: true, items: [mode(0, "daily"), mode(1, "endless")] },
   { title: "By era", icon: "clock", items: [2, 3, 4, 5, 6].map((i) => mode(i, "era")) },
   { title: "Coming soon", icon: "plus", items: GAMES.filter((g) => g.status === "soon").map((g) => ({ key: g.id, name: g.name, meta: g.genre + " · Soon", scene: g.thumb, kind: "soon" as Kind })) },
 ];
