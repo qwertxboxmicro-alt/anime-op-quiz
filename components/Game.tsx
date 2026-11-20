@@ -11,6 +11,7 @@ import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
 import { cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
+import { useTheme } from "@/lib/themes";
 import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
@@ -81,6 +82,7 @@ export default function Game() {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
   const { isSupporter, loading: supLoading } = useSupporter();
+  const [theme, setTheme] = useTheme(isSupporter);
   // On sign-in, upload today's finished local game so it counts toward the account.
   useEffect(() => {
     if (!user || day === null) return;
@@ -123,7 +125,7 @@ export default function Game() {
       </nav>
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
-      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
+      {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} isSupporter={isSupporter} theme={theme} onPick={setTheme} />}
       {!daily && arch !== null && isSupporter && (
         <div className="opts">
           <span>Puzzle</span>
