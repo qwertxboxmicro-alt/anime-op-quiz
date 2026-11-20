@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 // ponytail: contact address is a placeholder until the owner sets a real one.
-const CONTACT = "TODO-set-contact-email";
+const CONTACT = "qwertxboxmicro@gmail.com";
 
 export const metadata: Metadata = {
   title: "Terms | kikoe.io",
