@@ -82,7 +82,7 @@ export function GameTile({ g }: { g: GameEntry }) {
       <span className="h-tmeta">{g.genre} · {g.status === "live" ? "New puzzle every day" : "Coming soon"}</span>
     </>
   );
-  return g.status === "live" ? <Link href={g.route} className="h-tile">{body}</Link> : <div className="h-tile soon" aria-disabled>{body}</div>;
+  return g.status === "live" ? <Link href={g.route} className="h-tile live">{body}</Link> : <div className="h-tile soon" aria-disabled>{body}</div>;
 }
 
 export function GameGrid() {

@@ -75,7 +75,7 @@ export function Charts() {
             <div className="h-sec-h">
               <h2 className="h-h2"><PIcon name={s.icon} size={16} /> {s.title}</h2>
             </div>
-            <ul className={`h-row${s.ranked ? " feat" : ""}`}>{items.map((it, i) => <li key={it.key}><Tile it={it} rank={s.ranked ? i + 1 : undefined} /></li>)}</ul>
+            <ul className="h-row">{items.map((it, i) => <li key={it.key}><Tile it={it} rank={s.ranked ? i + 1 : undefined} /></li>)}</ul>
           </section>
         ) : null;
       })}
