@@ -9,6 +9,7 @@ import { ENDINGS } from "@/data/endings";
 import { loadClip, play, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
+import { Leagues } from "@/components/Leagues";
 import { cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
 import type { User } from "@supabase/supabase-js";
@@ -77,7 +78,7 @@ export default function Game() {
     next(); // new round so the new setting applies cleanly
   };
   const [endless, setEndless] = useState<Opening | null>(null);
-  const [modal, setModal] = useState<"how" | "stats" | "account" | null>(null);
+  const [modal, setModal] = useState<"how" | "stats" | "account" | "leagues" | null>(null);
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
   const { isSupporter, loading: supLoading } = useSupporter();
@@ -117,6 +118,7 @@ export default function Game() {
         )}
         <button className={`icon ${streamer ? "on" : ""}`} onClick={() => setStreamer(!streamer)} aria-label="Streamer mode" aria-pressed={streamer}>&#128250;</button>
         <button className="icon" onClick={() => setModal("stats")} aria-label="Stats">&#9783;</button>
+        {cloudEnabled && <button className="icon" onClick={() => setModal("leagues")} aria-label="Friend leagues">&#128101;</button>}
         {cloudEnabled && (
           <button className={`icon ${user ? "on" : ""}`} onClick={() => setModal("account")} aria-label="Account">&#9786;</button>
         )}
@@ -124,6 +126,7 @@ export default function Game() {
       {modal === "how" && <HowTo onClose={() => setModal(null)} />}
       {modal === "stats" && <StatsModal user={user} day={day} onClose={() => setModal(null)} onAccount={() => setModal("account")} />}
       {modal === "account" && <AccountModal user={user} onClose={() => setModal(null)} />}
+      {modal === "leagues" && <Leagues user={user} onClose={() => setModal(null)} />}
       {!daily && arch !== null && isSupporter && (
         <div className="opts">
           <span>Puzzle</span>
