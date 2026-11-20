@@ -60,9 +60,12 @@ export function Charts() {
   const k = KIND[f];
   return (
     <main className="h-page">
-      <div className="h-strip"><PixelCanvas scene="meadow" px={4} /><h1 className="h-ptitle">Charts</h1></div>
-      <div className="h-chips" role="group" aria-label="Filter">
-        {FILTERS.map((x) => <button key={x} className="h-fchip" aria-pressed={f === x} onClick={() => setF(x)}>{x}</button>)}
+      <div className="h-strip">
+        <PixelCanvas scene="op-quiz" variant={1} px={3} />
+        <h1 className="h-ptitle">Charts</h1>
+        <div className="h-chips" role="group" aria-label="Filter">
+          {FILTERS.map((x) => <button key={x} className="h-fchip" aria-pressed={f === x} onClick={() => setF(x)}>{x}</button>)}
+        </div>
       </div>
       {SHELVES.map((s) => {
         const items = s.items.filter((i) => !k || i.kind === k);
