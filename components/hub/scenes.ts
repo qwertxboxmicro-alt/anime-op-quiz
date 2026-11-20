@@ -24,14 +24,20 @@ export function meadow(w: number, h: number, seed = 11): Scene {
   const n1 = noise1(seed + 1), n2 = noise1(seed + 2), n3 = noise1(seed + 3);
   const far = new Buf(w, h);
   for (let x = 0; x < w; x++) {
-    const top = Math.round(hz - h * (0.1 + n1(x / 26) * 0.24));
+    const m = (xx: number) => n1(xx / 70) * 0.75 + Math.abs(Math.sin(xx / 23)) * 0.25;
+    const top = Math.round(hz - h * (0.06 + m(x) * 0.28));
     for (let y = top; y < hz + 4; y++) {
-      const snow = y < top + Math.max(1, Math.round((hz - top) * 0.22)) && hz - top > h * 0.18;
-      const slope = n1((x + 1) / 26) - n1((x - 1) / 26);
+      const snow = y < top + Math.max(1, Math.round((hz - top) * 0.25)) && hz - top > h * 0.17;
+      const slope = m(x + 1) - m(x - 1);
       far.set(x, y, snow ? c(slope > 0 ? "#dfe9f2" : "#f5f9fc") : c(slope > 0 ? "#94b1cc" : "#a9c2d8"));
     }
   }
   back.over(far);
+  // Morning haze over the foot of the range: dithered pale band so the far layer sits back.
+  for (let y = hz - Math.round(h * 0.08); y < hz + 4; y++) {
+    const k = (y - (hz - h * 0.08)) / (h * 0.08 + 4);
+    for (let x = 0; x < w; x++) if (k * 0.7 > dither(x, y)) back.set(x, y, c("#d4e6ee"));
+  }
   // Mid ridge (blue-green) and hills (green) with tree clusters.
   const land = new Buf(w, h);
   const ridge: number[] = [];
@@ -44,11 +50,16 @@ export function meadow(w: number, h: number, seed = 11): Scene {
   for (let x = 0; x < w; x++) {
     const top = Math.round(hz + h * 0.04 - h * (n3(x / 55) * 0.14) + Math.sin(x / 31) * h * 0.02);
     hill.push(top);
-    const slope = hill[x] - (hill[x - 1] ?? hill[x]);
+  }
+  for (let x = 0; x < w; x++) {
+    const top = hill[x];
+    // Slope over a wide window, dithered, so shaded sides read as soft slopes instead of stripes.
+    const slope = (hill[Math.min(w - 1, x + 4)] - hill[Math.max(0, x - 4)]) / 8;
+    const shade = Math.max(0, Math.min(1, 0.5 + slope * 1.5));
     for (let y = top; y < h; y++) {
       const k = (y - top) / (h - top);
-      const base = slope > 0 ? "#5f9f48" : "#6fb352";
-      land.set(x, y, k < 0.04 ? c("#8acb62") : k * 1.2 > dither(x, y) + 0.5 ? c("#58983f") : c(base));
+      const d = dither(x, y);
+      land.set(x, y, y === top ? c("#8acb62") : k * 1.2 > d + 0.5 ? c("#58983f") : shade > d + 0.25 ? c("#62a54a") : c("#6fb352"));
     }
   }
   // Tree clumps on the hills: round canopies, light from the upper right (the sun).
@@ -75,7 +86,7 @@ export function meadow(w: number, h: number, seed = 11): Scene {
     }
   }
   // Path: from bottom centre-left up to the windmill hill.
-  const mx = Math.round(w * 0.74);
+  const mx = Math.round(w * (w < 160 ? 0.86 : 0.74)); // phones: keep the windmill clear of the title
   for (let y = h - 1; y > hill[mx] + 2; y--) {
     const k = (h - y) / (h - hill[mx]);
     const cx = Math.round(w * 0.42 + (mx - w * 0.42) * k + Math.sin(k * 5) * w * 0.03);
@@ -230,7 +241,8 @@ export function thumbSkidmark(w: number, h: number): Scene {
   const b = new Buf(w, h);
   const hz = Math.round(h * 0.45);
   bands(b, 0, 0, w, hz, ["#ff7a59", "#ff9a5c", "#ffc06b", "#ffe0a0"]);
-  b.disc(Math.round(w * 0.3), hz - 2, Math.round(h * 0.14), c("#fff2c4"));
+  b.disc(Math.round(w * 0.22), Math.round(hz * 0.42), Math.round(h * 0.1), c("#fff2c4"));
+  b.disc(Math.round(w * 0.22), Math.round(hz * 0.42), Math.round(h * 0.1) - 2, c("#fffbe6"));
   // Mesas.
   const n = noise1(4);
   for (let x = 0; x < w; x++) {
@@ -251,7 +263,7 @@ export function thumbSkidmark(w: number, h: number): Scene {
     const k = i / 70;
     const x = Math.round(w * 0.45 + s * 5 - Math.sin(k * 3.1) * w * 0.3 - k * w * 0.1);
     const y = Math.round(h * 0.98 - k * h * 0.4);
-    b.set(x, y, c("#1c1820")); b.set(x + 1, y, c("#1c1820"));
+    b.rect(x, y, 3, 2, c("#1c1820")); b.set(x + 3, y, c("#5a4a52"));
   }
   for (let i = 0; i < w / 2; i++) b.set(r() * w, hz + 2 + r() * (h - hz), c("#c27a40"));
   // Cactus.
@@ -277,18 +289,27 @@ export function thumbRacer(w: number, h: number): Scene {
     else if (onTrack(x, y, 0)) b.set(x, y, c("#4a4a55"));
   }
   for (let y = Math.round(cy + ay - 9); y < cy + ay + 1; y++) for (let x = Math.round(cx - 3); x < cx + 3; x++) b.set(x, y, c(((x + y) & 1) ? "#111111" : "#ffffff"));
-  const car = (x: number, y: number, col: string) => { b.rect(x, y, 6, 3, c(col)); b.rect(x + 4, y, 1, 3, c("#cfe8ff")); b.set(x, y - 1, c("#111")); b.set(x + 4, y - 1, c("#111")); b.set(x, y + 3, c("#111")); b.set(x + 4, y + 3, c("#111")); };
-  car(Math.round(cx + 10), Math.round(cy + ay - 6), "#ff4f7b");
-  car(Math.round(cx - 22), Math.round(cy + ay - 4), "#4fe3f0");
-  car(Math.round(cx + ax - 8), Math.round(cy - 6), "#ffd24a");
+  const car = (x: number, y: number, col: string) => {
+    b.rect(x + 1, y - 1, 2, 1, c("#111111")); b.rect(x + 6, y - 1, 2, 1, c("#111111")); b.rect(x + 1, y + 4, 2, 1, c("#111111")); b.rect(x + 6, y + 4, 2, 1, c("#111111"));
+    b.rect(x, y, 9, 4, c(col)); b.rect(x + 5, y + 1, 2, 2, c("#cfe8ff")); b.rect(x + 8, y + 1, 1, 2, c("#fff3b0"));
+  };
+  car(Math.round(cx + 8), Math.round(cy + ay - 7), "#ff4f7b");
+  car(Math.round(cx - 24), Math.round(cy + ay - 5), "#4fe3f0");
+  car(Math.round(cx - ax * 0.6), Math.round(cy - ay + 1), "#ffd24a");
   // Trees and a grandstand.
   for (let i = 0; i < 14; i++) {
     const x = r() * w, y = r() * h;
     if (onTrack(x, y, 4)) continue;
     b.disc(x, y, 2, c("#2f7a33")); b.set(x - 1, y - 1, c("#58a64a"));
   }
-  b.rect(Math.round(cx - 18), Math.round(cy - 4), 36, 8, c("#d9d2c2"));
-  for (let x = 0; x < 34; x += 2) b.rect(Math.round(cx - 17 + x), Math.round(cy - 3), 1, 6, c(r() < 0.5 ? "#ff8fb3" : "#8fd3ff"));
+  // Grandstand above the back straight, pit building in the infield.
+  const gy = Math.round(cy - ay - 9);
+  b.rect(Math.round(cx - 24), gy, 48, 6, c("#d9d2c2"));
+  b.rect(Math.round(cx - 24), gy, 48, 1, c("#8a8478"));
+  for (let x = 0; x < 46; x++) for (let y = 1; y < 5; y++) if ((x + y) % 2 === 0) b.set(Math.round(cx - 23 + x), gy + y, c(["#ff8fb3", "#8fd3ff", "#ffd24a", "#ffffff"][Math.floor(r() * 4)]));
+  b.rect(Math.round(cx - 14), Math.round(cy - 3), 28, 6, c("#e9e4d8"));
+  b.rect(Math.round(cx - 14), Math.round(cy + 3), 28, 1, c("#9a9384"));
+  for (let x = 0; x < 6; x++) b.rect(Math.round(cx - 12 + x * 4), Math.round(cy - 1), 2, 2, c("#3b4a63"));
   return { w, h, animated: false, frame: () => b.d };
 }
 

@@ -26,7 +26,12 @@ export function onUser(cb: (u: User | null) => void) {
   return () => data.subscription.unsubscribe();
 }
 
+// Sign-in redirects land on the site root (the allow-listed URL). Remember where the player was so the hub can send them back.
+export const RETURN_KEY = "hibidle-return";
+const rememberPage = () => { try { localStorage.setItem(RETURN_KEY, JSON.stringify({ p: location.pathname + location.search, t: Date.now() })); } catch {} };
+
 export async function sendLink(email: string, captchaToken?: string) {
+  rememberPage();
   const { error } = await sb()!.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin, captchaToken } });
   return error?.message ?? null;
 }
@@ -70,6 +75,7 @@ export async function signInWith(provider: Provider): Promise<string | null> {
   } catch {
     return "Could not reach sign-in. Try the email link.";
   }
+  rememberPage();
   const { error } = await c.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
   return error?.message ?? null;
 }

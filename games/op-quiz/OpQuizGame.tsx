@@ -191,6 +191,7 @@ export default function Game() {
           <>
             <div className="menu-scrim" onClick={() => setMenu(false)} />
             <div className="menu" role="menu">
+              {menuItem("Hibidle home", () => { location.href = "/"; })}
               {menuItem("How to play", () => setModal("how"))}
               {menuItem("Stats", () => setModal("stats"))}
               {cloudEnabled && menuItem("Friend leagues", () => setModal("leagues"))}
