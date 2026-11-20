@@ -4,7 +4,7 @@ import { Buf, bands, c, dither, drawCloud, makeCloud, noise1, rng, type Cloud } 
 export type Scene = { w: number; h: number; frame: (t: number) => Uint32Array; animated: boolean };
 
 // ---------- Hero: hill country morning, windmill on the ridge ----------
-export function meadow(w: number, h: number, seed = 11): Scene {
+export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "day"): Scene {
   const r = rng(seed);
   const hz = Math.round(h * 0.6);
   const back = new Buf(w, h);
@@ -143,6 +143,28 @@ export function meadow(w: number, h: number, seed = 11): Scene {
   const out = new Buf(w, h);
   const blade = c("#f7f1e6"), bladeS = c("#a58f74");
   const birds = Array.from({ length: 3 }, () => ({ x: r() * w, y: h * (0.12 + r() * 0.2), v: 2 + r() * 2 }));
+  // Post pass, precomputed: per-pixel multipliers for a corner vignette and (dusk) a sky-to-ground colour grade.
+  const mul = new Float32Array(w * h * 3);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 3;
+    const dx = (x / w - 0.5) * 2, dy = (y / h - 0.45) * 2;
+    const v = Math.max(0, Math.hypot(dx * 0.85, dy * 0.7) - 0.75) * 0.9;
+    const dark = v > dither(x, y) * 0.5 ? 0.78 : 1;
+    let r = dark, g = dark, b = dark;
+    if (mood === "dusk") {
+      const k = y / h;
+      r *= 0.62 + k * 0.5; g *= 0.42 + k * 0.28; b *= 0.72 - k * 0.22;
+      if (y < hz) { r += 0.12; b += 0.08; }
+    }
+    mul[i] = r; mul[i + 1] = g; mul[i + 2] = b;
+  }
+  const grade = (d: Uint32Array) => {
+    for (let i = 0; i < d.length; i++) {
+      const v = d[i], j = i * 3;
+      const R = Math.min(255, (v & 255) * mul[j]), G = Math.min(255, ((v >> 8) & 255) * mul[j + 1]), B = Math.min(255, ((v >> 16) & 255) * mul[j + 2]);
+      d[i] = 0xff000000 | (B << 16) | (G << 8) | R;
+    }
+  };
   const tufts = Array.from({ length: Math.round(w / 3) }, (_, i) => ({ x: i * 3 + Math.floor(r() * 3), h: 2 + Math.floor(r() * 3), p: r() * 6 }));
 
   return {
@@ -183,6 +205,7 @@ export function meadow(w: number, h: number, seed = 11): Scene {
         const sway = Math.round(Math.sin(t * 1.6 + g.p + g.x * 0.15) * 0.8);
         for (let k = 0; k < g.h; k++) out.set(g.x + (k === g.h - 1 ? sway : 0), h - 1 - k, k === g.h - 1 ? g2 : g1);
       }
+      grade(out.d);
       return out.d;
     },
   };
@@ -200,10 +223,21 @@ function skyline(b: Buf, r: () => number, base: number, color: number, win: numb
 }
 
 // OP Quiz (kikoe): dusk city, a giant cassette tape floating over the skyline.
-export function thumbOpQuiz(w: number, h: number): Scene {
-  const r = rng(5);
+// Variants: 0 daily (dusk), 1 endless (night), 2 90s (amber), 3 00s (teal), 4 10s (rose), 5 20s (violet), 6 endings (deep blue).
+const OPQ_SKY = [
+  ["#1b1f4a", "#3b2a63", "#6e3a72", "#b4506e", "#f08a5d", "#ffc27a"],
+  ["#060a1c", "#0d1533", "#15214a", "#1e2f5e", "#2b4272", "#3d5a86"],
+  ["#2a1608", "#4a2510", "#7a3c14", "#b8621c", "#e59a3a", "#ffd27a"],
+  ["#062226", "#0b3a40", "#12575c", "#1d7d78", "#3aa894", "#8fe0c0"],
+  ["#2a0c22", "#4a1638", "#7a2552", "#b4416e", "#e47a96", "#ffc2cf"],
+  ["#120a2e", "#22124e", "#3a1c78", "#5a2aa0", "#8a52d0", "#c8a0ff"],
+  ["#03081a", "#081433", "#0f2252", "#183474", "#25509a", "#4a7cc4"],
+];
+const OPQ_LABEL = ["#ff4f7b", "#4fe3f0", "#ffb000", "#3ad6b0", "#ff7aa8", "#b98cf0", "#7fb2ff"];
+export function thumbOpQuiz(w: number, h: number, variant = 0): Scene {
+  const r = rng(5 + variant * 7);
   const b = new Buf(w, h);
-  bands(b, 0, 0, w, h, ["#1b1f4a", "#3b2a63", "#6e3a72", "#b4506e", "#f08a5d", "#ffc27a"]);
+  bands(b, 0, 0, w, h, OPQ_SKY[variant % OPQ_SKY.length]);
   for (let i = 0; i < w / 3; i++) b.set(r() * w, r() * h * 0.4, c(r() < 0.5 ? "#ffffff" : "#c9c4ff"));
   skyline(b, r, Math.round(h * 0.86), c("#4a2b55"), [], Math.round(h * 0.18), Math.round(h * 0.4));
   skyline(b, r, h, c("#24183a"), ["#ffd27a", "#ff9fb8", "#8fe8ff"].map((s) => c(s)), Math.round(h * 0.12), Math.round(h * 0.34));
@@ -214,7 +248,7 @@ export function thumbOpQuiz(w: number, h: number): Scene {
   b.rect(cx, cy, cw, 1, c("#ffffff"));
   b.rect(cx + cw - 1, cy, 1, ch, c("#c9bea6"));
   b.rect(cx, cy + ch - 1, cw, 1, c("#c9bea6"));
-  b.rect(cx + 3, cy + 3, cw - 6, Math.round(ch * 0.22), c("#ff4f7b"));
+  b.rect(cx + 3, cy + 3, cw - 6, Math.round(ch * 0.22), c(OPQ_LABEL[variant % OPQ_LABEL.length]));
   b.rect(cx + 3, cy + 3 + Math.round(ch * 0.22), cw - 6, 2, c("#ffb000"));
   const wy = cy + Math.round(ch * 0.4), ww = cw - 14;
   b.rect(cx + 7, wy, ww, Math.round(ch * 0.32), c("#2a2140"));
@@ -313,5 +347,11 @@ export function thumbRacer(w: number, h: number): Scene {
   return { w, h, animated: false, frame: () => b.d };
 }
 
-export const SCENES = { meadow, "op-quiz": thumbOpQuiz, skidmark: thumbSkidmark, racer: thumbRacer } as const;
+export const SCENES = {
+  meadow: (w: number, h: number) => meadow(w, h),
+  dusk: (w: number, h: number) => meadow(w, h, 23, "dusk"),
+  "op-quiz": thumbOpQuiz,
+  skidmark: (w: number, h: number) => thumbSkidmark(w, h),
+  racer: (w: number, h: number) => thumbRacer(w, h),
+} satisfies Record<string, (w: number, h: number, variant?: number) => Scene>;
 export type SceneId = keyof typeof SCENES;

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { PixelCanvas } from "@/components/hub/PixelCanvas";
-import { FriendsRow, GameGrid, HeroHud } from "@/components/hub/Home";
+import { FriendsRow, GameGrid, HeroHud, ModeShelf } from "@/components/hub/Home";
 import { PIcon } from "@/components/hub/Sprites";
 
 export default function HubHome() {
@@ -13,17 +13,17 @@ export default function HubHome() {
         <div className="h-hero-c">
           <h1 id="hero-t" className="h-title">Hibidle</h1>
           <p className="h-lab h-sub">Daily games · one account</p>
-          <div className="h-modes" role="group" aria-label="Today's pick">
-            <span className="h-mode on">Today: kikoe</span>
-            <Link href="/op-quiz?mode=endless" className="h-mode">Endless</Link>
+          <div className="h-actions">
+            <Link href="/op-quiz" className="h-cta"><PIcon name="play" size={16} /> Play today&apos;s kikoe</Link>
+            <Link href="/op-quiz?mode=endless" className="h-cta2">Endless mode</Link>
           </div>
-          <Link href="/op-quiz" className="h-cta"><PIcon name="play" size={16} /> Play today&apos;s puzzle</Link>
         </div>
       </section>
       <FriendsRow />
       <Suspense fallback={null}>
         <GameGrid />
       </Suspense>
+      <ModeShelf />
     </main>
   );
 }

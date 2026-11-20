@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useHub } from "@/platform/hub";
 import { readStats } from "@/games/op-quiz/stats";
-import { GAMES, type GameEntry } from "@/games/registry";
+import { GAMES, MODES, type GameEntry } from "@/games/registry";
 import { PixelCanvas } from "./PixelCanvas";
 import { Avatar, PIcon } from "./Sprites";
 
@@ -99,6 +99,29 @@ export function GameGrid() {
       ) : (
         <p className="h-empty">No game matches that yet.</p>
       )}
+    </section>
+  );
+}
+
+// Real playable modes of live games, as a horizontal shelf.
+export function ModeShelf() {
+  return (
+    <section className="h-sec">
+      <div className="h-sec-h">
+        <h2 className="h-h2">Pick a mode</h2>
+        <Link href="/charts" className="h-more">See all</Link>
+      </div>
+      <ul className="h-shelf">
+        {MODES.map((m) => (
+          <li key={m.id}>
+            <Link href={m.href} className="h-tile">
+              <span className="h-thumb"><PixelCanvas scene="op-quiz" variant={m.variant} px={3} /></span>
+              <b className="h-tname">{m.name}</b>
+              <span className="h-tmeta">{m.meta}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
