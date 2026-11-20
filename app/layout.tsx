@@ -5,7 +5,7 @@ import "./globals.css";
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "800"], style: ["normal", "italic"] });
 
 export const metadata: Metadata = {
-  title: "OPspot: guess the anime opening in 0.1 seconds",
+  title: "kikoe.io: guess the anime opening in 0.1 seconds",
   description: "A new anime opening every day. Name the anime from a tiny clip. Each miss unlocks more.",
 };
 export const viewport: Viewport = { themeColor: "#070a08" };

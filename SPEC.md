@@ -95,6 +95,6 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 
 ## Open questions
 
-- [ ] Final name + domain. (Live site currently shows "OPspot".)
+- [ ] Final name + domain. Code rename to "kikoe.io" done (text only; npm/repo/Supabase/Vercel ids and `opq-v1` unchanged). Domain not registered yet; live site still at `anime-op-quiz-alpha.vercel.app` and shows "OPspot" until the next deploy.
 - [ ] Guess the anime only, or bonus point for song title?
 - [x] Which ~60 openings for launch? 60 in `data/openings.ts` (2026-11-18); start offsets are heuristic, not checked by ear. Owner to review the picks.
