@@ -25,7 +25,8 @@ a { color: inherit; }
 .shell::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
   background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 94%, transparent) 0%, color-mix(in srgb, var(--bg) 80%, transparent) 38%, color-mix(in srgb, var(--bg) 30%, transparent) 72%, color-mix(in srgb, var(--bg) 45%, transparent) 100%); }
 .shell::after { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 82%, transparent) 0, color-mix(in srgb, var(--bg) 55%, transparent) 240px, transparent 380px, transparent calc(100% - 380px), color-mix(in srgb, var(--bg) 55%, transparent) calc(100% - 240px), color-mix(in srgb, var(--bg) 82%, transparent) 100%); }
-.cone { position: absolute; inset: 0 0 auto; height: 100dvh; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--card) 70%, var(--bg)); opacity: .96; clip-path: polygon(30% 0, 70% 0, 81% 100%, 19% 100%); }
+/* Soft, edgeless shade behind the centre column so the game reads over the town. */
+.cone { position: absolute; inset: 0 0 auto; height: 100dvh; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 30% 75% at 50% 45%, color-mix(in srgb, var(--bg) 82%, transparent) 0%, color-mix(in srgb, var(--bg) 55%, transparent) 55%, transparent 100%); }
 
 .burger-wrap { position: fixed; top: 14px; left: 20px; z-index: 20; }
 .burger { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--card2) 90%, transparent); color: var(--text); transition: background-color .15s; }
