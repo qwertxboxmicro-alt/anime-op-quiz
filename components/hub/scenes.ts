@@ -123,6 +123,14 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
   }
   // Branches peeking out under the crown.
   for (let k = 0; k < 6; k++) land.set(ox + 3 + k, og - Math.round(h * 0.3) - Math.round(k * 0.6), c("#62412a"));
+  // Foreground split-rail fence crossing the lower right, cropped by the frame edge.
+  const fy = Math.round(h * 0.88);
+  for (let x = Math.round(w * 0.8); x < w + 2; x++) {
+    const y = fy - Math.round((x - w * 0.8) * 0.12);
+    land.set(x, y, c("#8a6240")); land.set(x, y + 1, c("#5e4029"));
+    land.set(x, y + 4, c("#8a6240")); land.set(x, y + 5, c("#5e4029"));
+    if (Math.round(x - w * 0.8) % 9 === 0) for (let k = -3; k < 9; k++) { land.set(x, y + k, c("#9c7048")); land.set(x + 1, y + k, c("#5e4029")); }
+  }
   back.over(land);
   // Windmill body (blades are animated).
   const wy = hill[mx] - 1;
@@ -165,6 +173,7 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
       d[i] = 0xff000000 | (B << 16) | (G << 8) | R;
     }
   };
+  const petals = Array.from({ length: Math.round(w / 22) }, () => ({ x: r() * w, y: r() * h, v: 3 + r() * 4, p: r() * 6, col: c(r() < 0.6 ? "#ffc4d6" : "#ffffff") }));
   const tufts = Array.from({ length: Math.round(w / 3) }, (_, i) => ({ x: i * 3 + Math.floor(r() * 3), h: 2 + Math.floor(r() * 3), p: r() * 6 }));
 
   return {
@@ -198,6 +207,12 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
         out.set(x, y, v);
         out.set(x - 1, y + (up ? -1 : 0), v); out.set(x + 1, y + (up ? -1 : 0), v);
         out.set(x - 2, y + (up ? -1 : 1), v); out.set(x + 2, y + (up ? -1 : 1), v);
+      }
+      // Petals riding the breeze from the left.
+      for (const pt of petals) {
+        const x = ((pt.x + t * pt.v) % (w + 10)) - 5, y = ((pt.y + t * pt.v * 0.35 + Math.sin(t * 1.3 + pt.p) * 3) % h + h) % h;
+        out.set(x, y, pt.col);
+        if (Math.sin(t * 4 + pt.p) > 0) out.set(x + 1, y, pt.col);
       }
       // Foreground grass blades swaying along the bottom edge.
       const g1 = c("#4f9a3a"), g2 = c("#79c04f");
@@ -241,31 +256,94 @@ export function thumbOpQuiz(w: number, h: number, variant = 0): Scene {
   for (let i = 0; i < w / 3; i++) b.set(r() * w, r() * h * 0.4, c(r() < 0.5 ? "#ffffff" : "#c9c4ff"));
   skyline(b, r, Math.round(h * 0.86), c("#4a2b55"), [], Math.round(h * 0.18), Math.round(h * 0.4));
   skyline(b, r, h, c("#24183a"), ["#ffd27a", "#ff9fb8", "#8fe8ff"].map((s) => c(s)), Math.round(h * 0.12), Math.round(h * 0.34));
-  // Cassette.
-  const cw = Math.round(w * 0.44), ch = Math.round(cw * 0.62), cx = Math.round(w * 0.5 - cw / 2), cy = Math.round(h * 0.18);
-  b.rect(cx + 1, cy + ch, cw, 2, c("#1a1030"));
-  b.rect(cx, cy, cw, ch, c("#f2ead8"));
-  b.rect(cx, cy, cw, 1, c("#ffffff"));
-  b.rect(cx + cw - 1, cy, 1, ch, c("#c9bea6"));
-  b.rect(cx, cy + ch - 1, cw, 1, c("#c9bea6"));
-  b.rect(cx + 3, cy + 3, cw - 6, Math.round(ch * 0.22), c(OPQ_LABEL[variant % OPQ_LABEL.length]));
-  b.rect(cx + 3, cy + 3 + Math.round(ch * 0.22), cw - 6, 2, c("#ffb000"));
-  const wy = cy + Math.round(ch * 0.4), ww = cw - 14;
-  b.rect(cx + 7, wy, ww, Math.round(ch * 0.32), c("#2a2140"));
-  const rr = Math.max(2, Math.round(ch * 0.12));
-  for (const fx of [0.3, 0.7]) {
-    const rx = cx + Math.round(cw * fx), ry = wy + Math.round(ch * 0.16);
-    b.disc(rx, ry, rr, c("#f2ead8"));
-    b.disc(rx, ry, Math.max(1, rr - 2), c("#6b5a8a"));
-    b.set(rx, ry, c("#f2ead8"));
+  // Hero object per variant, so each mode reads as its own tile.
+  const ow = Math.round(w * 0.44), oh = Math.round(ow * 0.62), ox = Math.round(w * 0.5 - ow / 2), oy = Math.round(h * 0.18);
+  const ink = c("#1a1030"), cream = c("#f2ead8"), accent = c(OPQ_LABEL[variant % OPQ_LABEL.length]);
+  if (variant === 1) {
+    // Vinyl record with a tonearm: endless play.
+    const R = Math.round(oh * 0.62), vx = Math.round(w * 0.5), vy = oy + Math.round(oh * 0.55);
+    b.disc(vx + 1, vy + 2, R, ink);
+    b.disc(vx, vy, R, c("#14111c"));
+    for (let k = R - 2; k > R * 0.4; k -= 2) for (let t = 0; t < 360; t += 2) { const rad = (t * Math.PI) / 180; if ((t + k * 7) % 9 < 4) b.set(vx + Math.cos(rad) * k, vy + Math.sin(rad) * k, c("#2a2436")); }
+    b.disc(vx - Math.round(R * 0.35), vy - Math.round(R * 0.35), 2, c("#4a4458"));
+    b.disc(vx, vy, Math.round(R * 0.33), accent);
+    b.disc(vx, vy, 1, ink);
+    for (let k = 0; k < Math.round(R * 1.1); k++) b.set(vx + R - 2 - Math.round(k * 0.35), vy - R + k, c("#c9c4d6"));
+    b.rect(vx + R - 4, vy - R - 2, 5, 4, c("#e8e2f2"));
+  } else if (variant === 2) {
+    // CRT television: the classics.
+    b.rect(ox + 2, oy + oh + 1, ow, 2, ink);
+    b.rect(ox, oy, ow, oh, c("#d8cdb4")); b.rect(ox, oy, ow, 1, c("#f4ecda")); b.rect(ox, oy + oh - 2, ow, 2, c("#a99c80"));
+    const sw = Math.round(ow * 0.68), sh = oh - 8;
+    b.rect(ox + 4, oy + 4, sw, sh, c("#1c2a26"));
+    for (let y = 0; y < sh; y += 2) b.rect(ox + 5, oy + 5 + y, sw - 2, 1, c(y % 4 ? "#2f6b55" : "#3f8a6c"));
+    b.rect(ox + 4 + Math.round(sw * 0.3), oy + 4 + Math.round(sh * 0.35), Math.round(sw * 0.4), 3, accent);
+    for (const k of [0.3, 0.6]) b.disc(ox + sw + Math.round((ow - sw) / 2) + 2, oy + Math.round(oh * k), 2, c("#5a4e3a"));
+    for (let k = 0; k < 9; k++) { b.set(ox + ow / 2 - k, oy - 1 - k, c("#cfc7b6")); b.set(ox + ow / 2 + k, oy - 1 - k, c("#cfc7b6")); }
+  } else if (variant === 3) {
+    // Open flip phone: the 2000s.
+    const pw = Math.round(ow * 0.45), px0 = Math.round(w * 0.5 - pw / 2), ph = Math.round(oh * 0.62);
+    b.rect(px0 + 2, oy + ph * 2 + 2, pw, 2, ink);
+    b.rect(px0, oy, pw, ph, c("#c7ced9")); b.rect(px0 + 3, oy + 3, pw - 6, ph - 8, c("#3d6fb6"));
+    for (let y = 0; y < ph - 8; y += 3) b.rect(px0 + 4, oy + 4 + y, pw - 8, 1, c("#5b8fd6"));
+    b.rect(px0 + 4, oy + 5, Math.round((pw - 8) * 0.6), 2, accent);
+    b.rect(px0 - 1, oy + ph, pw + 2, 2, c("#8a93a3"));
+    b.rect(px0, oy + ph + 2, pw, ph, c("#aab3c2"));
+    for (let ry = 0; ry < 4; ry++) for (let rx = 0; rx < 3; rx++) b.rect(px0 + 3 + rx * Math.round((pw - 4) / 3), oy + ph + 5 + ry * Math.round((ph - 6) / 4), Math.round((pw - 10) / 3), 2, c("#e8ecf2"));
+  } else if (variant === 4) {
+    // Big headphones: the 2010s.
+    const hx = Math.round(w * 0.5), hy = oy + Math.round(oh * 0.75), R = Math.round(ow * 0.36);
+    for (let t = 180; t <= 360; t += 1) { const rad = (t * Math.PI) / 180; for (let k = 0; k < 3; k++) b.set(hx + Math.cos(rad) * (R - k), hy + Math.sin(rad) * (R - k), k === 0 ? c("#3a3150") : c("#5a4e78")); }
+    for (const sx of [-1, 1]) {
+      const ex = hx + sx * R - (sx > 0 ? 6 : 0);
+      b.rect(ex + 1, hy - 7, 6, 15, ink); b.rect(ex, hy - 8, 6, 15, c("#2a2440")); b.rect(ex + (sx > 0 ? 0 : 4), hy - 6, 2, 11, accent);
+    }
+  } else if (variant === 5) {
+    // Phone with a playing track: the 2020s.
+    const pw = Math.round(ow * 0.42), ph = Math.round(oh * 1.25), px0 = Math.round(w * 0.5 - pw / 2), py0 = Math.round(h * 0.1);
+    b.rect(px0 + 2, py0 + 2, pw, ph, ink);
+    b.rect(px0, py0, pw, ph, c("#1b1a26")); b.rect(px0 + 2, py0 + 3, pw - 4, ph - 6, c("#2b2147"));
+    b.rect(px0 + 4, py0 + 6, pw - 8, Math.round(pw * 0.7), accent);
+    b.rect(px0 + 4, py0 + 8 + Math.round(pw * 0.7), Math.round((pw - 8) * 0.7), 1, c("#e9e2ff"));
+    b.rect(px0 + 4, py0 + 10 + Math.round(pw * 0.7), pw - 8, 1, c("#5c4d8c"));
+    b.rect(px0 + 4, py0 + 10 + Math.round(pw * 0.7), Math.round((pw - 8) * 0.4), 1, c("#ffffff"));
+    const tx = px0 + Math.round(pw / 2) - 1, ty = py0 + 13 + Math.round(pw * 0.7);
+    for (let k = 0; k < 4; k++) b.rect(tx, ty + k - 1, 1 + Math.min(k, 3 - k) * 1, 1, c("#ffffff"));
+  } else if (variant === 6) {
+    // Ending credits over a calm sea.
+    const sea = Math.round(h * 0.62);
+    b.rect(0, sea, w, h - sea, c("#0c1f44"));
+    for (let y = sea + 1; y < h; y += 2) for (let x = (y * 3) % 7; x < w; x += 7) b.rect(x, y, 3, 1, c("#2a4f8a"));
+    b.disc(Math.round(w * 0.5), sea, Math.round(h * 0.16), c("#ffcf8a"));
+    for (let y = sea; y < h; y++) for (let x = 0; x < w; x++) if (b.get(x, y) === c("#ffcf8a")) b.set(x, y, (x + y) % 3 ? c("#0c1f44") : c("#ffcf8a"));
+    for (let k = 0; k < 6; k++) { const lw = Math.round(w * (0.18 + ((k * 37) % 10) / 40)); b.rect(Math.round(w / 2 - lw / 2), Math.round(h * 0.12) + k * 4, lw, 1, c(k % 2 ? "#cfe0ff" : "#ffffff")); }
+  } else {
+    // Cassette.
+    const cw = Math.round(w * 0.44), ch = Math.round(cw * 0.62), cx = Math.round(w * 0.5 - cw / 2), cy = Math.round(h * 0.18);
+    b.rect(cx + 1, cy + ch, cw, 2, c("#1a1030"));
+    b.rect(cx, cy, cw, ch, c("#f2ead8"));
+    b.rect(cx, cy, cw, 1, c("#ffffff"));
+    b.rect(cx + cw - 1, cy, 1, ch, c("#c9bea6"));
+    b.rect(cx, cy + ch - 1, cw, 1, c("#c9bea6"));
+    b.rect(cx + 3, cy + 3, cw - 6, Math.round(ch * 0.22), c(OPQ_LABEL[variant % OPQ_LABEL.length]));
+    b.rect(cx + 3, cy + 3 + Math.round(ch * 0.22), cw - 6, 2, c("#ffb000"));
+    const wy = cy + Math.round(ch * 0.4), ww = cw - 14;
+    b.rect(cx + 7, wy, ww, Math.round(ch * 0.32), c("#2a2140"));
+    const rr = Math.max(2, Math.round(ch * 0.12));
+    for (const fx of [0.3, 0.7]) {
+      const rx = cx + Math.round(cw * fx), ry = wy + Math.round(ch * 0.16);
+      b.disc(rx, ry, rr, c("#f2ead8"));
+      b.disc(rx, ry, Math.max(1, rr - 2), c("#6b5a8a"));
+      b.set(rx, ry, c("#f2ead8"));
+    }
+    b.rect(cx + Math.round(cw * 0.3) + rr, wy + Math.round(ch * 0.16), Math.round(cw * 0.4) - rr * 2 + 1, 1, c("#8a6a4a"));
+    b.rect(cx + Math.round(cw * 0.25), cy + ch - Math.round(ch * 0.14), Math.round(cw * 0.5), Math.round(ch * 0.14), c("#d9cfb8"));
   }
-  b.rect(cx + Math.round(cw * 0.3) + rr, wy + Math.round(ch * 0.16), Math.round(cw * 0.4) - rr * 2 + 1, 1, c("#8a6a4a"));
-  b.rect(cx + Math.round(cw * 0.25), cy + ch - Math.round(ch * 0.14), Math.round(cw * 0.5), Math.round(ch * 0.14), c("#d9cfb8"));
   // Music notes.
   const note = (x: number, y: number, col: number) => { b.rect(x, y, 2, 2, col); b.rect(x + 1, y - 5, 1, 5, col); b.rect(x + 2, y - 5, 2, 1, col); };
-  note(cx - 8, cy + 8, c("#8fe8ff"));
-  note(cx + cw + 5, cy + 4, c("#ffd27a"));
-  note(cx + cw + 9, cy + ch - 2, c("#ff9fb8"));
+  note(ox - 8, oy + 8, c("#8fe8ff"));
+  note(ox + ow + 5, oy + 4, c("#ffd27a"));
+  note(ox + ow + 9, oy + oh - 2, c("#ff9fb8"));
   return { w, h, animated: false, frame: () => b.d };
 }
 
