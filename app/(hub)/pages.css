@@ -223,3 +223,12 @@
 .hub .h-prof .h-plate { width: fit-content; min-width: min(480px, 100%); padding-right: 40px; }
 /* Chat empty scene blends into the pane instead of a hard rectangle. */
 .hub .h-scene svg { -webkit-mask-image: radial-gradient(ellipse 70% 75% at 50% 55%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 70% 75% at 50% 55%, #000 55%, transparent 100%); }
+
+/* Corner ticks: small cyan brackets inside the notched corners of big panels (HUD chrome). */
+.hub :is(.h-panel:not(.h-prof), .h-cpane, .h-hbar, .h-stat, .h-fcard, .h-hud, .h-plate) {
+  --tk: linear-gradient(#4fe3f0aa, #4fe3f0aa);
+  background-image: var(--tk), var(--tk), var(--tk), var(--tk), var(--tk), var(--tk), var(--tk), var(--tk), var(--scan);
+  background-position: 8px 8px, 8px 8px, calc(100% - 8px) 8px, calc(100% - 8px) 8px, 8px calc(100% - 8px), 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), 0 0;
+  background-size: 10px 2px, 2px 10px, 10px 2px, 2px 10px, 10px 2px, 2px 10px, 10px 2px, 2px 10px, auto;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+}

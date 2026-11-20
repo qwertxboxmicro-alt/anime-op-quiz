@@ -131,6 +131,18 @@ export function meadow(w: number, h: number, seed = 11, mood: "day" | "dusk" = "
     land.set(x, y + 4, c("#8a6240")); land.set(x, y + 5, c("#5e4029"));
     if ((x + 2) % 9 === 0) for (let k = -3; k < 9; k++) { land.set(x, y + k, c("#9c7048")); land.set(x + 1, y + k, c("#5e4029")); }
   }
+  // Foreground bush mounds in both bottom corners: darker and larger, so the meadow reads as a middle plane.
+  for (const [bx0, dir] of [[0, 1], [w, -1]] as const) {
+    const bw = Math.round(w * 0.16), bh = Math.round(h * 0.16);
+    for (let i = 0; i < 26; i++) {
+      const cx = Math.round(bx0 + dir * r() * bw), cy = h - Math.round(r() * bh * 0.6), rr = Math.max(2, Math.round(bh * (0.18 + r() * 0.22) * (1 - Math.abs(cx - bx0) / (bw * 1.4))));
+      for (let y = -rr; y <= rr; y++) for (let x = -rr; x <= rr; x++) {
+        if (x * x + y * y > rr * rr + rr * 0.5) continue;
+        const lit = (x * 0.6 - y * 0.8) / rr;
+        land.set(cx + x, cy + y, c(lit > 0.55 ? "#4f8f3c" : lit > 0 ? "#2f6b2c" : "#1f4a22"));
+      }
+    }
+  }
   back.over(land);
   // Windmill body (blades are animated).
   const wy = hill[mx] - 1;
