@@ -32,7 +32,7 @@ export function Chat() {
   };
   return (
     <main className="h-page">
-      <div className="h-sec-h">
+      <div className="h-sec-h h-hbar">
         <h1 className="h-ptitle">Chat</h1>
         {demo && <span className="h-chip">Demo</span>}
         <span className="h-note">Messages are not saved yet.</span>
@@ -44,7 +44,7 @@ export function Chat() {
           <div className="h-crow" role="button" aria-disabled="true"><span className="h-cicon"><PIcon name="users" size={22} /></span><b>Groups</b><span className="h-chip">Soon</span></div>
           {convs.map((c) => (
             <button key={c.name} className={`h-crow${sel === c.name ? " on" : ""}`} onClick={() => setSel(c.name)}>
-              <span className="h-avw"><Avatar seed={c.name} size={44} className="h-av" />{c.status !== "offline" && <span className={`h-dot ${c.status}`} />}</span>
+              <span className="h-avw"><Avatar seed={c.name} size={48} className="h-av" />{c.status !== "offline" && <span className={`h-dot ${c.status}`} />}</span>
               <span style={{ minWidth: 0 }}><b>{c.name}</b><small>{SEED[c.name].msgs.at(-1)!.t}</small></span>
               <span className="h-meta"><time>{SEED[c.name].time}</time>{SEED[c.name].unread && <span className="h-unread">{SEED[c.name].unread}</span>}</span>
             </button>
@@ -71,7 +71,7 @@ export function Chat() {
                 <g transform="rotate(7 22 14)"><rect x="14" y="10" width="14" height="9" fill="#ff4f7b" /><rect x="14" y="18" width="14" height="1" fill="#c4345a" /><rect x="17" y="13" width="8" height="1" fill="#ffd9e3" /><rect x="17" y="15" width="5" height="1" fill="#ffd9e3" /><rect x="24" y="19" width="2" height="2" fill="#ff4f7b" /></g>
               </svg>
               <b>Pick a friend to chat</b>
-              <Link href="/friends" className="h-btn alt">Find friends</Link>
+              <Link href="/friends" className="h-btn">Find friends</Link>
             </div>
           )}
         </section>

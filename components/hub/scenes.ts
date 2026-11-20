@@ -258,7 +258,7 @@ export function thumbOpQuiz(w: number, h: number, variant = 0): Scene {
   skyline(b, r, h, c("#24183a"), ["#ffd27a", "#ff9fb8", "#8fe8ff"].map((s) => c(s)), Math.round(h * 0.12), Math.round(h * 0.34));
   // Hero object per variant, so each mode reads as its own tile.
   const ow = Math.round(w * 0.44), oh = Math.round(ow * 0.62), ox = Math.round(w * 0.5 - ow / 2), oy = Math.round(h * 0.18);
-  const ink = c("#1a1030"), cream = c("#f2ead8"), accent = c(OPQ_LABEL[variant % OPQ_LABEL.length]);
+  const ink = c("#1a1030"), accent = c(OPQ_LABEL[variant % OPQ_LABEL.length]);
   if (variant === 1) {
     // Vinyl record with a tonearm: endless play.
     const R = Math.round(oh * 0.62), vx = Math.round(w * 0.5), vy = oy + Math.round(oh * 0.55);

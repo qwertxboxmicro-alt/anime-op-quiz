@@ -8,6 +8,19 @@ import { Turnstile, turnstileSiteKey } from "@/platform/Turnstile";
 import { PixelCanvas } from "./PixelCanvas";
 import { Avatar, PIcon, type IconName } from "./Sprites";
 
+type R = [number, number, number, number, string];
+const G = "#3a4a66", L = "#566a8c", D = "#26354f";
+// ponytail: locked grey placeholders; give them colour once achievements are tracked.
+const frame: R[] = [[4, 2, 16, 20, D], [5, 3, 14, 18, G]];
+const BADGES: [string, R[]][] = [
+  ["First win", [...frame, [10, 6, 4, 2, L], [9, 8, 6, 5, L], [11, 13, 2, 3, L], [9, 16, 6, 2, L]]],
+  ["3-day streak", [...frame, [11, 6, 2, 2, L], [10, 8, 4, 2, L], [9, 10, 6, 4, L], [10, 14, 4, 2, L]]],
+  ["7-day streak", [...frame, [11, 5, 2, 2, L], [10, 7, 4, 2, L], [8, 9, 8, 3, L], [9, 12, 6, 3, L], [10, 15, 4, 2, L]]],
+  ["One-try solve", [...frame, [11, 6, 2, 10, L], [9, 8, 2, 2, L], [9, 16, 6, 2, L]]],
+  ["All eras", [...frame, [8, 7, 8, 1, L], [8, 11, 8, 1, L], [8, 15, 8, 1, L], [7, 8, 1, 7, L], [16, 8, 1, 7, L]]],
+  ["Night owl", [...frame, [9, 6, 6, 2, L], [8, 8, 8, 6, L], [9, 10, 2, 2, G], [13, 10, 2, 2, G], [11, 12, 2, 2, D], [9, 14, 6, 3, L]]],
+];
+
 export function Me() {
   const { user, name, isSupporter } = useHub();
   const [s, setS] = useState<Stats | null>(null);
@@ -89,8 +102,58 @@ export function Me() {
           ) : (
             <>
               <p className="h-note">Sign in to keep your stats across devices.</p>
-              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
-              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}><i style={{ background: "#ea4335" }} />Continue with Google</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}><i style={{ background: "#5865f2" }} />Continue with Discord</button>
+              <p className="h-note">Or use a one-time email link. No password.</p>
+              <input className="h-input" type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
+              <Turnstile key={widget} onToken={setCaptcha} />
+              <button className="h-btn" disabled={busy || needCaptcha || !/^\S+@\S+\.\S+$/.test(email.trim())} onClick={send}>Send link</button>
+              {msg && <p className="h-note" role="status">{msg}</p>}
+            </>
+          )}
+        </div>
+        <div className="h-panel h-acct">
+          <span className="h-lab">kikoe history · last 14 days</span>
+          <div className="h-days">
+            {last14.map((d, i) => {
+              const r = hasDays ? days[d] : undefined;
+              return <span key={i} className={`h-day${r ? (r.won ? " w" : " l") : ""}`} title={`Day ${d}`}>{r?.won ? r.tries : ""}</span>;
+            })}
+          </div>
+          <div className="h-legend"><span><i className="w" />Won (tries)</span><span><i className="l" />Lost</span><span><i />Not played</span></div>
+          {!hasDays && <p className="h-note">No daily games yet. Play today&apos;s kikoe and your history shows up here.</p>}
+        </div>
+        </div>
+      </section>
+      <section className="h-sec">
+        <h2 className="h-h2">kikoe</h2>
+        <div className="h-stats">{stats.map(([l, v, ic]) => <div key={l} className="h-stat"><PIcon name={ic} size={18} /><span className="h-lab">{l}</span><b>{v}</b></div>)}</div>
+      </section>
+      <section className="h-sec">
+        <h2 className="h-h2">Account</h2>
+        <div className="h-acctgrid">
+        <div className="h-panel h-acct">
+          {user ? (
+            <>
+              <p className="h-note">Signed in as <b>{user.email}</b>.</p>
+              <button className="h-btn" onClick={() => signOut()}>Sign out</button>
+              {!deleting ? (
+                <button className="h-btn alt" onClick={() => setDeleting(true)}>Delete account</button>
+              ) : (
+                <>
+                  <p className="h-note">This permanently deletes your account and all synced results. Type <b>DELETE</b> to confirm.</p>
+                  <input className="h-input" value={confirm} placeholder="DELETE" aria-label="Type DELETE to confirm" autoComplete="off" onChange={(e) => setConfirm(e.target.value)} />
+                  <button className="h-btn alt" disabled={busy || confirm.trim() !== "DELETE"} onClick={remove}>Permanently delete</button>
+                  {msg && <p className="h-note" role="alert">{msg}</p>}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="h-note">Sign in to keep your stats across devices.</p>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("google")}><i style={{ background: "#ea4335" }} />Continue with Google</button>
+              <button className="h-prov" disabled={busy} onClick={() => oauth("discord")}><i style={{ background: "#5865f2" }} />Continue with Discord</button>
               <p className="h-note">Or use a one-time email link. No password.</p>
               <input className="h-input" type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
                 onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
@@ -114,6 +177,20 @@ export function Me() {
             </>
           ) : <p className="h-note">No daily games yet. Play today&apos;s kikoe and your history shows up here.</p>}
         </div>
+        </div>
+      </section>
+      <section className="h-sec">
+        <div className="h-sec-h"><h2 className="h-h2">Achievements</h2><span className="h-chip">Soon</span></div>
+        <div className="h-panel h-acct">
+          <ul className="h-badges">
+            {BADGES.map(([n, d]) => (
+              <li key={n}>
+                <svg width="48" height="48" viewBox="0 0 24 24" shapeRendering="crispEdges" aria-hidden>{d.map(([x, y, w, h, c], i) => <rect key={i} x={x} y={y} width={w} height={h} fill={c} />)}</svg>
+                <span>{n}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="h-note">Badges unlock as you play.</p>
         </div>
       </section>
       <p className="h-links"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></p>
