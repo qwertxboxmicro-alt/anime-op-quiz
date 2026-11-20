@@ -75,6 +75,7 @@ export default function Game() {
   const [vol, setVol] = useState(0.8);
   const [covers, setCovers] = useState(true);
   const [menu, setMenu] = useState(false);
+  const [optsOpen, setOptsOpen] = useState(false); // narrow screens: side panels fold behind a button
   useEffect(() => {
     try {
       setStreamer(localStorage.getItem("opq-streamer") === "1");
@@ -178,7 +179,7 @@ export default function Game() {
   );
 
   return (
-    <div className="shell" id="top">
+    <div className={`shell ${optsOpen ? "opts-open" : ""}`} id="top">
       <Scene />
       <div className="cone" aria-hidden />
       <div className="burger-wrap">
@@ -311,6 +312,9 @@ export default function Game() {
             </button>
           </div>
           <p className="lab center">More ways to play</p>
+          <button className="opts-btn" aria-expanded={optsOpen} onClick={() => setOptsOpen(!optsOpen)}>
+            {optsOpen ? "Hide game options" : "Game options"} <IChev />
+          </button>
         </section>
       </main>
 

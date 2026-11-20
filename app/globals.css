@@ -178,6 +178,7 @@ a { color: inherit; }
 .card.hot { border-color: color-mix(in srgb, var(--accent) 32%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--card)); }
 .ribbon { position: absolute; top: 7px; right: -18px; width: 64px; transform: rotate(40deg); background: var(--accent); color: #04130b; font-size: .45rem; font-weight: 800; line-height: 1.6; font-style: normal; letter-spacing: .08em; text-transform: uppercase; text-align: center; }
 
+.opts-btn { display: none; }
 .foot { position: absolute; right: 28px; top: calc(100dvh - 34px); display: flex; gap: 18px; font-size: .75rem; font-weight: 600; }
 .foot a { color: var(--dim); text-decoration: none; }
 .foot a:hover { color: var(--text); }
@@ -256,6 +257,11 @@ html.streamer { font-size: 20px; }
   .burger-wrap { position: absolute; top: 12px; left: 12px; }
   .shell::after { display: none; }
   .diff-list, .diff-list + hr { display: none; }
+  .side { display: none; }
+  .opts-open .side { display: flex; }
+  .opts-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; margin-top: 6px; border-radius: 10px; background: var(--card2); color: var(--soft); font-size: .85rem; font-weight: 700; }
+  .opts-btn svg { transition: transform .2s; }
+  .opts-open .opts-btn svg { transform: rotate(180deg); }
   .game { background: radial-gradient(ellipse 70% 55% at 50% 45%, color-mix(in srgb, var(--bg) 80%, transparent), transparent 75%); }
   .cards { margin: 0; grid-template-columns: repeat(3, 1fr); -webkit-mask-image: none; mask-image: none; }
   .mast h1 { color: color-mix(in srgb, var(--text) 16%, var(--bg)); }
