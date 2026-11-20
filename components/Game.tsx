@@ -9,7 +9,7 @@ import { ENDINGS } from "@/data/endings";
 import { loadClip, play, stop } from "@/lib/audio";
 import { recordResult } from "@/lib/stats";
 import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
-import { cloudEnabled, onUser, pushResult } from "@/lib/cloud";
+import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/lib/cloud";
 import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
@@ -79,13 +79,9 @@ export default function Game() {
   const [modal, setModal] = useState<"how" | "stats" | "account" | null>(null);
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onUser(setUser), []);
-  // On sign-in, upload today's finished local game so it counts toward the account.
+  // On sign-in, upload finished local days (background, once per account; see backfillLocal).
   useEffect(() => {
-    if (!user || day === null) return;
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || "null");
-      if (s?.day === day && finished(s.guesses)) pushResult({ day, won: won(s.guesses), tries: s.guesses.length });
-    } catch {}
+    if (user && day !== null) backfillLocal(day);
   }, [user, day]);
   useEffect(() => {
     try {

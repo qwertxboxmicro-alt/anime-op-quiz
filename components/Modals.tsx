@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { readStats, type Stats } from "@/lib/stats";
 import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
-import { cloudEnabled, deleteAccount, fetchGlobalDay, fetchRows, sendLink, type GlobalDay, signOut, statsFromRows } from "@/lib/cloud";
+import { cloudEnabled, deleteAccount, fetchGlobalDay, fetchRows, sendLink, signInWith, type GlobalDay, type Provider, signOut, statsFromRows } from "@/lib/cloud";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -85,8 +85,13 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
     const err = await deleteAccount();
     if (err) { setMsg(err); setBusy(false); return; }
     // Wipe this device's game data too (stats, today's game, options, seen flag).
-    try { ["opq-v1", "opq-stats", "opq-opts", "opq-seen"].forEach((k) => localStorage.removeItem(k)); } catch {}
+    try { ["opq-v1", "opq-days", "opq-stats", "opq-opts", "opq-seen"].forEach((k) => localStorage.removeItem(k)); } catch {}
     window.location.reload();
+  };
+  const oauth = async (p: Provider) => {
+    setBusy(true);
+    const err = await signInWith(p);
+    if (err) { setMsg(err); setBusy(false); } // success: the browser is already leaving for the provider
   };
   const send = async () => {
     setBusy(true);
@@ -117,7 +122,10 @@ export function AccountModal({ user, onClose }: { user: User | null; onClose: ()
         </>
       ) : (
         <>
-          <p className="how">Sign in with a one-time email link to keep your stats across devices. No password.</p>
+          <p className="how">Sign in to keep your stats across devices.</p>
+          <button disabled={busy} onClick={() => oauth("google")}>Continue with Google</button>
+          <button disabled={busy} onClick={() => oauth("discord")}>Continue with Discord</button>
+          <p className="how">Or use a one-time email link. No password.</p>
           <input type="email" value={email} placeholder="you@email.com" aria-label="Email" autoComplete="email"
             onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && email && !busy && !needCaptcha && send()} />
           <Turnstile key={widget} onToken={setCaptcha} />

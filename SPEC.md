@@ -46,13 +46,13 @@ Working name. Daily web game: hear a tiny clip of an anime opening, guess the an
 - [x] `results(user_id, day, won, tries)` table, one row per user per daily puzzle (`supabase/migrations/0001_results.sql`).
 - [x] Row Level Security: users read/insert only their own rows; no update/delete; anon has no access.
 - [x] Stats modal shows synced stats when signed in, device-only stats when signed out.
-- [x] On sign-in, today's finished local game is uploaded.
+- [x] On sign-in, all finished local dailies are uploaded (back-fill, see next line).
 - [x] Supabase project `anime-op-quiz` (ref `meqpyffiuqylljsxupfh`) created; migrations 0001 + 0002 applied; Auth site URL + redirect allow-list set (prod + localhost).
 - [x] `.env.local` (gitignored) and Vercel Production env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key) set; production redeployed 2026-11-17, live bundle contains the project URL. Preview/Development scopes not set.
 - [x] Applied `supabase/migrations/0003_global_stats.sql` to the live project 2026-11-18. Global-stats line shows once a day has 5+ players.
-- [ ] Back-fill: old local-only history (before sign-in) is not uploaded, only today's game. Decide if that matters.
+- [x] Back-fill: finished days logged in `opq-days` (new, from this change) upload on sign-in, insert-only (existing rows never overwritten). _Code: `backfillLocal` in `lib/cloud.ts`, `logDay` in `lib/stats.ts`._ Days played before this shipped are not recoverable (only aggregates were stored).
 - [x] Delete-my-account flow (needs a server route with the service role key, never client-side). _Code: `app/api/delete-account/route.ts` + Account dialog. Fail-closed (503) checked locally with the key unset; not exercised against live Supabase. Owner must set `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel._ Live check 2026-11-18: `POST /api/delete-account` returned 503 until the key was set. Key now set in `.env.local` and Vercel Production, redeployed; a fake bearer token returns 401 "Not signed in." (key is live, bad token rejected). Real deletion tested live 2026-11-18 (throwaway user via admin API + local route POST): 200, user and `results` rows gone, old token then 401, cross-origin 403; see `docs/work-log/quiz-tests.md` §7. Account dialog UI click-through not exercised.
-- [ ] Optional: Google/Discord sign-in.
+- [x] Google/Discord sign-in: code done 2026-11-20 (`signInWith` in `lib/cloud.ts`, buttons in Account dialog). Owner must enable both providers in Supabase + Google/Discord consoles; see `docs/oauth-setup.md`. Not yet enabled, so untested live.
 
 ## Security testing
 
