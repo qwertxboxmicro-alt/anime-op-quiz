@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { readStats, type Stats } from "@/lib/stats";
-import { Turnstile, turnstileSiteKey } from "@/components/Turnstile";
-import { ThemePicker } from "@/components/ThemePicker";
-import type { ThemeId } from "@/lib/themes";
-import { cloudEnabled, consumeFreeze, deleteAccount, fetchFreezes, fetchGlobalDay, fetchRows, sendLink, signInWith, type GlobalDay, type Provider, signOut } from "@/lib/cloud";
-import { freezeCandidates, monthKey, statsFromRows } from "@/lib/streak";
+import { readStats, type Stats } from "@/games/op-quiz/stats";
+import { Turnstile, turnstileSiteKey } from "@/platform/Turnstile";
+import { ThemePicker } from "@/platform/ThemePicker";
+import type { ThemeId } from "@/platform/themes";
+import { cloudEnabled, consumeFreeze, deleteAccount, fetchFreezes, fetchGlobalDay, fetchRows, sendLink, signInWith, type GlobalDay, type Provider, signOut } from "@/platform/cloud";
+import { freezeCandidates, monthKey, statsFromRows } from "@/games/op-quiz/streak";
 
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (

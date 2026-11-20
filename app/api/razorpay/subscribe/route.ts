@@ -1,7 +1,7 @@
 // Server-only: creates a Razorpay subscription for the CALLER. The user id comes from the verified access token,
 // never from the body, and is stored in subscription notes so the webhook can map payments back to the user.
 import { createClient } from "@supabase/supabase-js";
-import { isActiveSupporter } from "@/lib/supporter-access";
+import { isActiveSupporter } from "@/platform/supporter-access";
 
 const fail = (status: number, error: string) => Response.json({ error }, { status });
 

@@ -13,9 +13,9 @@ kikoe (a game in the Hibidle hub, `hibidle.com`). Daily web game: hear a tiny cl
 
 - [x] One opening per day, same for everyone (picked by date). _Code: `openingFor(day)` in `lib/game.ts`._
 - [x] Clip lengths unlock per miss: 0.1s, 0.5s, 1s, 2s, 4s, 8s (6 tries). _Code: `CLIPS` in `lib/game.ts`._
-- [x] Player guesses the **anime title** (not song title). Skip button = counts as a miss. _Code: `submit("", "skip")` adds a guess in `Game.tsx`._
+- [x] Player guesses the **anime title** (not song title). Skip button = counts as a miss. _Code: `submit("", "skip")` adds a guess in `OpQuizGame.tsx`._
 - [x] Autocomplete over a list of anime titles (English + romaji). _Code: matches title + alt terms from `public/anime.json` (alts include romaji); not checked how complete the list is._
-- [x] Win/lose screen: anime, song, artist, cover art, link to Apple Music. _Code: result section in `Game.tsx`._
+- [x] Win/lose screen: anime, song, artist, cover art, link to Apple Music. _Code: result section in `OpQuizGame.tsx`._
 - [x] Share text, e.g. `🎵 0.5s 🟥🟩⬛⬛⬛⬛` + site URL. _Code: `shareText` in `lib/game.ts`; format is `🎵 kikoe #N 0.5s <squares>` + origin (was `OP Quiz` until 2026-11-20); skips show ⬜._
 - [x] One play per day per device (localStorage). _Code: `opq-v1` restores today's guesses. Accounts were added later (optional)._
 - [x] Countdown to next puzzle. _Code: `useCountdown` + `msToNext` (UTC midnight)._
@@ -80,7 +80,7 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 - [x] Streak freeze: 1 per calendar month, auto-used for a single missed day, no stacking. _Built (not applied live): migration `0006_streak_freezes.sql` (RLS: active supporter, one per month), pure `lib/streak.ts`, client sync in `StatsModal`, self-check `node scripts/streak-check.mjs`. Signed-out and non-supporter streaks unchanged._
 - [x] Private friend leagues: create/join by invite code, shared leaderboard + group stats. _Code: migration `0005_leagues.sql` (NOT applied to live), `components/Leagues.tsx`, gated by `useSupporter` (real `lib/useSupporter.ts`)._
 - [x] Cosmetics: themes and badges, no gameplay effect. _Code: `lib/themes.ts` (3 Supporter themes + free default, `data-theme` on `<html>`, localStorage `opq-theme`), `components/ThemePicker.tsx` in Account dialog, Supporter badge there, CSS in `app/globals.css`. Picker lives in Account, so only reachable when Supabase is configured. Not browser-tested._
-- [x] Archive of past dailies becomes **paid**: go back to older days and play them. _Built: `Game.tsx` shows `ArchiveLocked` (upgrade prompt) unless `useSupporter().isSupporter`; supporters get the unchanged archive. Archive runs still do not save to `opq-v1` or count toward stats/streak._
+- [x] Archive of past dailies becomes **paid**: go back to older days and play them. _Built: `OpQuizGame.tsx` shows `ArchiveLocked` (upgrade prompt) unless `useSupporter().isSupporter`; supporters get the unchanged archive. Archive runs still do not save to `opq-v1` or count toward stats/streak._
 - [ ] Tip jar (Ko-fi / Buy Me a Coffee) as a zero-code first step before Supporter.
 - Never paywall: daily puzzle, stats, sharing. Audio stays iTunes previews only (no rehosting).
 
@@ -88,16 +88,16 @@ Rule: daily puzzle, stats, streak display and global stats stay free for everyon
 
 - [x] Global stats: "N% got it today, most in X tries" in stats modal via `global_day_stats` RPC. Migration `0003_global_stats.sql` applied to live Supabase 2026-11-18 (via Composio; function + grants verified: anon and authenticated execute, public revoked, security definer, empty search_path). End-to-end verified 2026-11-20 (§9).
 - [x] Streamer mode: big text, no spoilers in UI, OBS-friendly layout.
-- [x] Endless / practice mode (random openings). _Code: `randomOpening` in `Game.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
-- [x] Endings (ED) mode, decade filters. _Code: `data/endings.ts` (13 ED entries, Endless-only) + `year` on `Opening`; Type/Era rows in `Game.tsx` Endless; daily/archive/stats untouched. Empty filter combo falls back to the whole pool._
+- [x] Endless / practice mode (random openings). _Code: `randomOpening` in `OpQuizGame.tsx`, difficulty + start-length options; picks from all openings, not only past dailies._
+- [x] Endings (ED) mode, decade filters. _Code: `data/endings.ts` (13 ED entries, Endless-only) + `year` on `Opening`; Type/Era rows in `OpQuizGame.tsx` Endless; daily/archive/stats untouched. Empty filter combo falls back to the whole pool._
 - [x] Hard mode (start at 0.05s). _Code: `SCHEDULES["0.05"]`, Endless "Start at" option._
-- [x] Streaks (stats modal), archive of past days. _Code: Archive tab in `Game.tsx` replays `openingFor(day)`; not saved to `opq-v1`, not counted in stats._
+- [x] Streaks (stats modal), archive of past days. _Code: Archive tab in `OpQuizGame.tsx` replays `openingFor(day)`; not saved to `opq-v1`, not counted in stats._
 
 ## SEO (audit 2026-11-20)
 
 Full report and phased plan: `docs/seo-audit.md`. Score ~38/100. Findings:
 
-- [ ] Homepage SSRs an empty body (`Game.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
+- [ ] Homepage SSRs an empty body (`OpQuizGame.tsx` `if (!ready) return null;`): render the `<h1>` + intro server-side, gate only interactive parts.
 - [ ] Add `app/robots.ts` and `app/sitemap.ts` (`/`, `/privacy`, `/terms`); both 404 today.
 - [ ] Add `metadataBase` + canonical in `layout.tsx` (use `hibidle.com`).
 - [ ] Domain `hibidle.com`: buy, then (only after Razorpay approval) attach in Vercel, 301 the `*.vercel.app` host, add to Search Console. See `docs/domain-setup.md`.

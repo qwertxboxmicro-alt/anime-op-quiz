@@ -1,7 +1,7 @@
-// Self-check for lib/supporter-access.ts. Run: node scripts/supporter-check.mjs (Node 22.18+ or 24 strips TS types natively).
+// Self-check for platform/supporter-access.ts. Run: node scripts/supporter-check.mjs (Node 22.18+ or 24 strips TS types natively).
 import assert from "node:assert/strict";
 
-const { isActiveSupporter } = await import(new URL("../lib/supporter-access.ts", import.meta.url).href);
+const { isActiveSupporter } = await import(new URL("../platform/supporter-access.ts", import.meta.url).href);
 
 const NOW = Date.parse("2026-11-20T00:00:00Z");
 const future = "2026-12-20T00:00:00Z";

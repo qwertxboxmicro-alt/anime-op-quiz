@@ -1,7 +1,7 @@
-// Self-check for lib/streak.ts. Run: node scripts/streak-check.mjs (Node 22.18+ or 24 strips TS types natively).
+// Self-check for games/op-quiz/streak.ts. Run: node scripts/streak-check.mjs (Node 22.18+ or 24 strips TS types natively).
 import assert from "node:assert/strict";
 
-const { statsFromRows, freezeCandidates } = await import(new URL("../lib/streak.ts", import.meta.url).href);
+const { statsFromRows, freezeCandidates } = await import(new URL("../games/op-quiz/streak.ts", import.meta.url).href);
 
 const T = 20800; // "today" for these fixtures
 const win = (day) => ({ day, won: true, tries: 2 });

@@ -2,8 +2,8 @@
 // so the game still works signed out / unconfigured. Only the public anon key is used client-side;
 // row access is enforced by RLS (supabase/migrations/0001_results.sql).
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { logDay, readDays } from "@/lib/stats";
-import { finished, won as wonGuesses, type Saved } from "@/lib/game";
+import { logDay, readDays } from "@/games/op-quiz/stats";
+import { finished, won as wonGuesses, type Saved } from "@/games/op-quiz/game";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

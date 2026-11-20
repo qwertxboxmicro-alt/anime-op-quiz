@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { THEMES, type ThemeId } from "@/lib/themes";
-import { startSupporterCheckout } from "@/lib/useSupporter";
+import { THEMES, type ThemeId } from "@/platform/themes";
+import { startSupporterCheckout } from "@/platform/useSupporter";
 
 // Theme picker. Locked themes show an upgrade prompt for non-supporters.
 export function ThemePicker({ isSupporter, theme, onPick }: { isSupporter: boolean; theme: ThemeId; onPick: (id: ThemeId) => void }) {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Game from "@/components/Game";
-import { IDisc, IHead, ITape, IWave } from "@/components/Icons";
+import Game from "@/games/op-quiz/OpQuizGame";
+import { IDisc, IHead, ITape, IWave } from "@/games/op-quiz/Icons";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
@@ -63,7 +63,7 @@ export default function Home() {
             <ul className="eras">
               {ERAS.map((e) => (
                 <li key={e.era}>
-                  <a href={`/?mode=endless&era=${e.era}`}>
+                  <a href={`/op-quiz?mode=endless&era=${e.era}`}>
                     <span style={{ color: e.c }}>{e.icon}</span>
                     {e.label}
                   </a>

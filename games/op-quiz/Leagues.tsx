@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { cloudEnabled, sb } from "@/lib/cloud";
-import { useSupporter } from "@/lib/useSupporter";
+import { cloudEnabled, sb } from "@/platform/cloud";
+import { useSupporter } from "@/platform/useSupporter";
 
 type League = { id: string; name: string; invite_code: string; owner_id: string };
 type Row = { label: string; is_me: boolean; games: number; wins: number; avg_tries: number | null };

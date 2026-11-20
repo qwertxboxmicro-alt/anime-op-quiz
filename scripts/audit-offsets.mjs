@@ -8,7 +8,7 @@ const tmp = process.argv[2] ?? "audit-tmp"; mkdirSync(tmp, { recursive: true });
 const src = readFileSync("data/openings.ts", "utf8");
 const rows = [...src.matchAll(/anime: "([^"]+)".*?song: "([^"]+)", artist: "([^"]+)", itunesTrackId: (\d+), startOffset: ([\d.]+)/g)]
   .map((m) => ({ anime: m[1], song: m[2], artist: m[3], id: +m[4], off: +m[5] }));
-const g = readFileSync("lib/game.ts", "utf8");
+const g = readFileSync("games/op-quiz/game.ts", "utf8");
 const DAILY = Math.max(...g.match(/CLIPS: readonly number\[\] = \[([^\]]+)\]/)[1].split(",").map(Number));
 const ENDLESS = Math.max(...[...g.matchAll(/\[([\d., ]+)\]/g)].flatMap((m) => m[1].split(",").map(Number)));
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();

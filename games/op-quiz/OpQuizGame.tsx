@@ -3,19 +3,19 @@
 // so setState-in-effect is intentional here.
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, poster, puzzleNo, shareText, todayNum, won, type Guess, type Meta } from "@/lib/game";
+import { CLIPS, SCHEDULES, finished, isCorrect, lookup, msToNext, openingFor, poster, puzzleNo, shareText, todayNum, won, type Guess, type Meta } from "@/games/op-quiz/game";
 import { OPENINGS, type Opening } from "@/data/openings";
 import { ENDINGS } from "@/data/endings";
-import { loadClip, play, setVolume, stop } from "@/lib/audio";
-import { recordResult } from "@/lib/stats";
-import { AccountModal, HowTo, StatsModal } from "@/components/Modals";
-import { Leagues } from "@/components/Leagues";
-import Scene from "@/components/Scene";
-import { Dropdown } from "@/components/Dropdown";
-import { IChev, IGrid, IMenu, IMic, INote, IPlay, IPlayLine, IReroll, ISearch, IShuffle, ISkip, IStop, ISwap } from "@/components/Icons";
-import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/lib/cloud";
-import { startSupporterCheckout, useSupporter } from "@/lib/useSupporter";
-import { useTheme } from "@/lib/themes";
+import { loadClip, play, setVolume, stop } from "@/games/op-quiz/audio";
+import { recordResult } from "@/games/op-quiz/stats";
+import { AccountModal, HowTo, StatsModal } from "@/games/op-quiz/Modals";
+import { Leagues } from "@/games/op-quiz/Leagues";
+import Scene from "@/games/op-quiz/Scene";
+import { Dropdown } from "@/games/op-quiz/Dropdown";
+import { IChev, IGrid, IMenu, IMic, INote, IPlay, IPlayLine, IReroll, ISearch, IShuffle, ISkip, IStop, ISwap } from "@/games/op-quiz/Icons";
+import { backfillLocal, cloudEnabled, onUser, pushResult } from "@/platform/cloud";
+import { startSupporterCheckout, useSupporter } from "@/platform/useSupporter";
+import { useTheme } from "@/platform/themes";
 import type { User } from "@supabase/supabase-js";
 
 type Entry = string[]; // [display, coverUrl, ...alt search terms]
@@ -131,7 +131,7 @@ export default function Game() {
   };
 
   useEffect(() => {
-    // Deep links: /?mode=endless&era=2010&type=endings (era links in the About section).
+    // Deep links: /op-quiz?mode=endless&era=2010&type=endings (era links in the About section).
     const p = new URLSearchParams(location.search);
     const era = Number(p.get("era"));
     const dec = (DECADES as readonly number[]).includes(era) ? era : 0;

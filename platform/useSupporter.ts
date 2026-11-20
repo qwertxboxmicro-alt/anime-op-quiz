@@ -2,7 +2,7 @@
 // Supporter entitlement for the signed-in user. Reads ONLY the user's own `supporters` row (RLS allows nothing else).
 // Writes happen server-side via the Razorpay webhook. Signed out or unconfigured = not a supporter.
 import { useEffect, useState } from "react";
-import { onUser, sb } from "@/lib/cloud";
+import { onUser, sb } from "@/platform/cloud";
 
 export function useSupporter(): { isSupporter: boolean; loading: boolean } {
   const [isSupporter, setIsSupporter] = useState(false);

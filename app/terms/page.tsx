@@ -15,7 +15,7 @@ const wrap = { maxWidth: 680, margin: "0 auto", padding: "24px 16px 40px", displ
 export default function TermsPage() {
   return (
     <main style={wrap}>
-      <Link href="/" style={{ color: "var(--accent)" }}>&larr; Back to game</Link>
+      <Link href="/op-quiz" style={{ color: "var(--accent)" }}>&larr; Back to game</Link>
       <h1 style={{ fontSize: "2rem", fontWeight: 800 }}>Terms</h1>
       <p style={{ color: "var(--dim)" }}>Last updated: 20 November 2026</p>
 

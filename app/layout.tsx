@@ -1,32 +1,20 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import { SITE } from "@/lib/site";
+import { SITE } from "@/platform/site";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], style: ["normal", "italic"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Anime opening quiz: guess the anime in 0.1 seconds | kikoe.io",
-  description: "Daily anime opening quiz. Name the anime from a 0.1-second clip. Each miss unlocks more.",
+  title: "Hibidle: daily games",
+  description: "Daily browser games in one place. One account, your stats, your friends.",
 };
 export const viewport: Viewport = { themeColor: "#070a08" };
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@graph": [
-    { "@type": "WebSite", name: "kikoe.io", url: SITE },
-    {
-      "@type": "VideoGame",
-      name: "kikoe.io",
-      genre: "Quiz",
-      playMode: "SinglePlayer",
-      applicationCategory: "Game",
-      inLanguage: "en",
-      url: SITE,
-      offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
-    },
-  ],
+  "@graph": [{ "@type": "WebSite", name: "Hibidle", url: SITE }],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -35,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }}
         />
         {children}
       </body>

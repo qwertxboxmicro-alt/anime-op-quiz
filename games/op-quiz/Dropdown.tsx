@@ -1,7 +1,7 @@
 "use client";
 // Styled replacement for <select>: the native popup can't be themed on Windows (white list, grey highlight).
 import { useEffect, useRef, useState } from "react";
-import { IChev } from "@/components/Icons";
+import { IChev } from "@/games/op-quiz/Icons";
 
 type Opt<T> = { value: T; label: string };
 
